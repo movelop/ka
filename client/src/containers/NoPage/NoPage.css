@@ -1,0 +1,70 @@
+.nopage {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 10rem;
+}
+
+.nopageContainer {
+    width: 100%;
+    max-width: 1380px;
+    display: flex;
+    justify-content: center;
+}
+
+.nopageContainer h2 {
+    font-size: 32px;
+    color: var(--primary-color);
+}
+
+@media screen and (min-width: 2000px) {
+    .nopage {
+        margin-top: 20rem;
+    }
+
+    .nopageContainer {
+        max-width: 1980px;
+    }
+
+    .nopageContainer h2 {
+        font-size: 48px;
+    }
+}
+
+
+@media screen and (max-width:1550px) {
+    .nopageContainer {
+        max-width: 1024px;
+    }
+
+    .nopageContainer h2 {
+        font-size: 28px;
+    }
+}
+
+@media screen and (max-width:1150px) {
+    .nopageContainer {
+        max-width: 850px;
+    }
+
+    .nopageContainer h2 {
+        font-size: 26px;
+    }
+}
+
+@media screen and (max-width:850px){
+    .nopageContainer {
+        max-width: 90%;
+    }
+}
+
+@media screen and (max-width:550px) {
+    .nopage {
+        margin-top: 5rem;
+    }
+
+    .nopageContainer h2 {
+        font-size: 22px;
+        text-align: center;
+    }
+}

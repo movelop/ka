@@ -1,0 +1,89 @@
+.small {
+    width: 100vw;
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4rem;
+    position: relative;
+}
+
+.smallOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(20, 39, 74, 0.5);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.smallText {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+}
+
+.smallText h3 {
+    font-family: var(--font-heading);
+    font-style: normal;
+    font-weight: bolder;
+    font-size: 48px;
+    color: var(--white-color);
+
+}
+
+.smallHeadingSearch {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    z-index: 99;
+    display: flex;
+    justify-content: center;
+}
+
+
+@media screen and (min-width:2000px) {
+    .smallText h3 {
+        font-size: 79px;
+    }
+}
+
+@media screen and (max-width: 1550px) {
+    .smallText h3 {
+        font-size: 38px;
+    }
+}
+
+@media screen and (max-width: 1150px) {
+    .smallText h3 {
+        font-size: 34px;
+    }
+}
+
+@media screen and (max-width: 850px) {
+    .small {
+        height: 50vh;
+    }
+
+    .smallText h3 {
+        font-size: 36px;
+    }
+}
+
+@media screen and (max-width: 550px) {
+    .smallText h3 {
+        font-size: 28px;
+    }
+}
+
+@media screen and (max-width: 385px) {
+
+    .smallText h3 {
+        font-size: 22px;
+    }
+}
+    

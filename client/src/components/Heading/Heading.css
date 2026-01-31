@@ -1,0 +1,146 @@
+/* =============================
+   HEADING BASE
+============================= */
+.heading {
+    width: 100vw;
+    height: 50vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(20, 39, 74, 0.5);
+    margin-bottom: 6rem;
+}
+
+.headingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(20, 39, 74, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.headingContainer {
+    width: 100%;
+    max-width: 1380px;
+    margin-top: 10rem;
+}
+
+.headingTexts {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    max-width: 480px;
+    text-align: center;
+}
+
+.headingTexts h6 {
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--white-color);
+}
+
+.headingTexts h2 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 56px;
+    letter-spacing: 0.07em;
+    color: var(--white-color);
+}
+
+.headingTexts h4 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 0.4em;
+    color: var(--white-color);
+    margin-bottom: 0.75rem;
+}
+
+.headingTexts p {
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    color: var(--white-color);
+}
+
+.headerSearch {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    z-index: 99;
+    display: flex;
+    justify-content: center;
+}
+
+/* =============================
+   RESPONSIVE STYLES
+============================= */
+
+/* Ultra large screens */
+@media screen and (min-width: 2000px) {
+    .headingContainer {
+        min-width: 1980px;
+        margin-top: 20rem;
+    }
+
+    .headingTexts { max-width: 40%; }
+
+    .headingTexts h6 { font-size: 4rem; }
+    .headingTexts h2 { font-size: 8rem; letter-spacing: 0.09em; }
+    .headingTexts h4 { font-size: 4rem; letter-spacing: 0.6em; }
+    .headingTexts p { font-size: 2.5rem; letter-spacing: 0.2em; }
+}
+
+/* Medium screens */
+@media screen and (max-width: 1550px) {
+    .headingContainer { max-width: 1024px; margin-top: 8rem; }
+
+    .headingTexts h6 { font-size: 24px; }
+    .headingTexts h2 { font-size: 42px; letter-spacing: 0.07em; }
+    .headingTexts h4 { font-size: 28px; letter-spacing: 0.2em; }
+    .headingTexts p { font-size: 14px; }
+}
+
+/* Small screens */
+@media screen and (max-width: 1150px) {
+    .heading { height: 60vh; }
+    .headingContainer { max-width: 850px; margin-top: 7rem; }
+    .headingTexts { max-width: 360px; }
+
+    .headingTexts h6 { font-size: 22px; }
+    .headingTexts h2 { font-size: 38px; letter-spacing: 0.07em; }
+    .headingTexts h4 { font-size: 24px; letter-spacing: 0.2em; margin-bottom: 0.5rem; }
+}
+
+/* Medium mobile */
+@media screen and (max-width: 850px) {
+    .heading { height: 40vh; margin-bottom: 5rem; }
+    .headingContainer { max-width: 90%; margin-top: 8rem; }
+
+    .headingTexts h6 { font-size: 1.5rem; }
+    .headingTexts h2 { font-size: 3.2rem; letter-spacing: 0.07em; }
+    .headingTexts h4 { font-size: 2rem; letter-spacing: 0.2em; }
+    .headingTexts p { font-size: 1rem; }
+}
+
+/* Small mobile */
+@media screen and (max-width: 550px) {
+    .heading { margin-bottom: 4rem; }
+    .headingContainer { margin-top: 7rem; }
+    .headingTexts { max-width: 100%; }
+
+    .headingTexts h6 { font-size: 1.2rem; }
+    .headingTexts h2 { font-size: 2rem; }
+    .headingTexts h4 { font-size: 1rem; }
+    .headingTexts p { font-size: 0.85rem; }
+}
+
+/* Extra small mobile */
+@media screen and (max-width: 385px) {
+    .heading { height: 50vh; }
+}

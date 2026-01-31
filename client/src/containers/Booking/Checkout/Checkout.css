@@ -1,0 +1,267 @@
+/* ================================
+   CHECKOUT PAGE
+================================= */
+.checkout {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 3rem;
+}
+
+.checkoutContainer {
+    width: 100%;
+    max-width: 1380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.checkoutContainer > h1 {
+    font-size: 28px;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.checkoutRoomInfo {
+    background-color: #c3d6f8;
+    width: 100%;
+    max-width: 1024px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    gap: 1rem;
+}
+
+.checkoutRoomInfo > h1 {
+    font-size: 18px;
+}
+
+.checkoutRoomInfo > div {
+    display: flex;
+    justify-content: space-between;
+    width: 40%;
+    padding: 1rem 0;
+}
+
+.checkoutRoomInfo > div > span {
+    display: flex;
+    align-items: center;
+}
+
+.alert {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 14px;
+    color: #af2d2d;
+}
+
+/* ================================
+   GUEST DETAILS
+================================= */
+.guestDetails {
+    margin: 3rem auto;
+    max-width: 1024px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.guestDetails > h1 {
+    font-size: 18px;
+    color: var(--primary-color);
+    text-transform: uppercase;
+}
+
+.errorMsg {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    color: crimson;
+}
+
+.guestDetails > form {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0 3rem;
+    gap: 1rem;
+}
+
+.guestFormInput {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--primary-color);
+}
+
+.guestFormInput > label {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.guestFormInput > input {
+    border: 1px solid var(--primary-color);
+    font-size: 16px;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.guestFormInput > input:focus {
+    border: 2px solid var(--primary-color);
+    outline: none;
+}
+
+.guestFormInput > .checkbox {
+    width: 25px;
+    height: 25px;
+}
+
+.selectRoomContainer {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.selectRoomContainer > label {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.selectRoom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.optionsBoxes {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.optionsBoxes > .checkbox {
+    width: 25px;
+    height: 25px;
+    border-color: var(--primary-color);
+}
+
+.optionsBoxes > label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.guestFormButton {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.guestFormButton > button {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: var(--gold-color);
+    border: none;
+    outline: none;
+    color: var(--white-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.guestFormButton > button:hover {
+    opacity: 0.9;
+}
+
+.guestFormButton > .continue {
+    background-color: var(--primary-color);
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
+
+/* Extra large screens */
+@media screen and (min-width: 2000px) {
+    .checkoutContainer > h1 { font-size: 38px; }
+    .checkoutRoomInfo { max-width: 1580px; gap: 1.5rem; }
+    .checkoutRoomInfo > h1 { font-size: 28px; }
+    .checkoutRoomInfo > div { width: 50%; padding: 2rem 0; }
+    .checkoutRoomInfo > div > h4 { font-size: 28px; }
+    .checkoutRoomInfo > div > span { font-size: 26px; }
+    .alert { font-size: 24px; }
+    .guestDetails { max-width: 1580px; }
+    .guestDetails > h1 { font-size: 28px; }
+    .guestFormInput > label,
+    .optionsBoxes > label,
+    .selectRoomContainer > label { font-size: 26px; }
+    .guestFormInput > input { font-size: 24px; padding: 12px; }
+    .optionsBoxes > .checkbox { width: 45px; height: 45px; }
+    .guestFormButton > button { font-size: 28px; width: 300px; padding: 15px; }
+}
+
+/* Large screens */
+@media screen and (max-width: 1550px) {
+    .checkoutContainer { max-width: 1024px; }
+    .checkoutContainer > h1 { font-size: 24px; }
+    .checkoutRoomInfo { max-width: 900px; }
+    .checkoutRoomInfo > h1 { font-size: 16px; }
+    .checkoutRoomInfo > div > h4,
+    .checkoutRoomInfo > div > span { font-size: 15px; }
+    .guestDetails { max-width: 900px; }
+    .guestDetails h1 { font-size: 16px; }
+    .guestFormInput > label,
+    .optionsBoxes > label { font-size: 15px; }
+    .guestFormInput > input { font-size: 15px; }
+    .guestFormButton > button { width: 150px; }
+}
+
+/* Medium screens */
+@media screen and (max-width: 1150px) {
+    .checkoutContainer { max-width: 850px; }
+    .checkoutContainer > h1 { font-size: 22px; }
+    .checkoutRoomInfo { max-width: 780px; }
+    .alert { font-size: 14px; margin-top: 5px; }
+    .optionsBoxes > .checkbox { width: 20px; height: 20px; }
+}
+
+/* Small screens */
+@media screen and (max-width: 850px) {
+    .checkoutContainer { max-width: 90%; }
+    .checkoutRoomInfo { max-width: 90%; }
+    .checkoutRoomInfo > div { width: 60%; }
+    .guestDetails { max-width: 90%; }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 550px) {
+    .checkoutRoomInfo > div { width: 95%; }
+    .checkoutRoomInfo > h1 { font-size: 14px; }
+    .checkoutRoomInfo > div > h4,
+    .checkoutRoomInfo > div > span { font-size: 13px; }
+    .alert { font-size: 12px; }
+    .guestFormInput, .selectRoomContainer { width: 100%; }
+    .guestFormButton > button { font-size: 14px; width: 150px; }
+}
+
+/* Tiny screens */
+@media screen and (max-width: 385px) {
+    .checkoutRoomInfo { max-width: 85%; }
+    .checkoutRoomInfo > div { width: 100%; }
+    .checkoutRoomInfo > div > h4,
+    .checkoutRoomInfo > div > span { font-size: 10px; }
+    .guestDetails { max-width: 95%; }
+    .guestFormButton > button { width: 130px; }
+}

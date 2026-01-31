@@ -1,0 +1,181 @@
+/* ================================
+   AVAILABILITY CARD
+================================= */
+.availabilityCard {
+    display: flex;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 5px 15px 1px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: var(--white-color);
+}
+
+.availabiltyCardImg {
+    flex: 30%;
+    height: 200px;
+}
+
+.availabiltyCardImg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.availabilityCardInfo {
+    flex: 50%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem;
+    flex-wrap: wrap;
+}
+
+.availabilityCardInfo > h2 {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: bolder;
+    margin-bottom: 4px;
+}
+
+.location {
+    color: #435a85;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.details {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.details > div {
+    flex: 50%;
+    line-height: 1.4;
+    margin: 5px 0;
+}
+
+.details > div > label {
+    font-weight: bold;
+}
+
+.availabilityCardPrice {
+    flex: 20%;
+    text-align: end;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.availabilityCardPrice > div > label {
+    color: #435a85;
+    font-weight: bold;
+}
+
+.availabilityCardPrice > div > h6,
+.availabilityCardPrice > div > h4 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.availabilityCardPrice > div > h6 > span,
+.availabilityCardPrice > div > h4 > span {
+    display: flex;
+    align-items: center;
+}
+
+.availabilityCardPrice > div > h6 {
+    font-size: 1rem;
+}
+
+.availabilityCardPrice > div > h4 {
+    font-size: 1.5rem;
+}
+
+.availabilityButton {
+    margin-top: 1rem;
+    width: 120px;
+    font-size: 16px;
+    padding: 10px;
+    background-color: var(--white-color);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.availabilityCardPrice > button:hover {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
+
+/* Extra large screens */
+@media screen and (min-width: 2000px) {
+    .availabilityCard {
+        padding: 2rem;
+        margin: 2.5rem 0;
+    }
+
+    .availabilityCardInfo h2 { font-size: 38px; }
+    .location { font-size: 24px; gap: 6px; }
+    .details { margin-top: 20px; }
+    .details > div > label,
+    .details > div > p { font-size: 28px; line-height: 1.6; }
+
+    .availabilityCardPrice > div > label { font-size: 28px; }
+    .availabilityCardPrice > div > h6 { font-size: 1.75rem; }
+    .availabilityCardPrice > div > h4 { font-size: 2.5rem; }
+
+    .availabilityButton { width: 180px; font-size: 28px; padding: 20px; }
+}
+
+/* Large screens */
+@media screen and (max-width: 1550px) {
+    .availabilityCardInfo h2 { font-size: 22px; }
+    .location { font-size: 14px; }
+    .details > div > label { font-size: 16px; }
+    .details > div > p { font-size: 15px; }
+    .availabilityCardPrice > div > label { font-size: 16px; }
+    .availabilityCardPrice > div > h6 { font-size: 1rem; }
+    .availabilityCardPrice > div > h4 { font-size: 1.3rem; }
+    .availabilityButton { width: 100px; font-size: 15px; }
+}
+
+/* Medium screens */
+@media screen and (max-width: 1150px) {
+    .availabilityCardInfo h2 { font-size: 20px; }
+    .location { font-size: 12px; }
+    .details > div > label { font-size: 14px; }
+    .details > div > p { font-size: 13px; }
+    .availabilityCardPrice > div > label { font-size: 14px; }
+    .availabilityCardPrice > div > h6 { font-size: 0.85rem; }
+    .availabilityCardPrice > div > h4 { font-size: 1.1rem; }
+    .availabilityButton { width: 90px; font-size: 14px; }
+}
+
+/* Small screens */
+@media screen and (max-width: 850px) {
+    .availabilityCard { flex-wrap: wrap; }
+    .availabiltyCardImg { flex: 100%; margin-top: 10px; }
+    .availabilityCardInfo { flex: 40%; margin-top: 10px; }
+    .availabilityCardPrice { flex: 100%; margin-top: 10px; text-align: right; }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 550px) {
+    .availabilityCardInfo { flex: 100%; }
+    .availabilityCardPrice { flex: 100%; justify-content: space-between; flex-wrap: wrap; margin-top: 1rem; text-align: right; }
+    .availabilityCardPrice > div > label { font-size: 12px; }
+    .availabilityCardPrice > div > h6 { justify-content: flex-start; }
+    .availabilityCardPrice > button { width: 100%; }
+}
