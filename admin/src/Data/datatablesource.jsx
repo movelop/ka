@@ -164,7 +164,7 @@ export const bookingColumns = [
     },
   }, 
   {
-    field: "registeredBy", headerName: "Channel", width: 100,
+    field: "registeredBy", headerName: "Channel", width: 200,
     renderCell: (params) => {
       return (
         <div className="flex items-center">

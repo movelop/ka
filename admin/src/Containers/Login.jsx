@@ -15,6 +15,10 @@ const Login = () => {
   const state = location.state;
   const from = state?.from || '/';
   const navigate = useNavigate();
+  
+  const handleChange = (e) => {
+    setCredentials((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,54 +44,66 @@ const Login = () => {
   }
   return (
      <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
-            <div className="w-[90%] md:w-[80%] p-6 m-auto bg-white dark:bg-secondary-dark-bg rounded-md shadow-md lg:max-w-xl">
-                <h1 className="text-3xl font-semibold text-center dark:text-gray-200 underline">
-                   Sign in
-                </h1>
-                <form className="mt-6">
-                    <div className="mb-2">
-                        <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200"
-                        >
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Username or Email Address" 
-                            onChange={ (e) => setCredentials({ ...credentials, username: e.target.value }) }
-                            className="block w-full px-4 py-2 mt-2 text-gray-800 dark:text-gray-400 bg-white dark:bg-secondary-dark-bg border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label   className="block text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            name="password" 
-                            placeholder="Enter your password" 
-                            onChange={(e) => setCredentials({ ...credentials, password: e.target.value }) }
-                            className="block w-full px-4 py-2 mt-2 text-gray-800 dark:text-gray-400 bg-white dark:bg-secondary-dark-bg border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
-                        />
-                    </div>
-                    {error && 
-                        <p    className="text-lg my-2 text-red-600 hover:underline">
-                            {error.message}
-                        </p>
-                    }
-                    <div className="mt-6">
-                        <button 
-                            disabled={loading}
-                            onClick={handleLogin}
-                            className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600"
-                            style={{ backgroundColor: currentColor }}
-                        >
-                            Login
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+      <div className="w-[90%] md:w-[80%] p-6 m-auto bg-white dark:bg-secondary-dark-bg rounded-md shadow-md lg:max-w-xl">
+
+        <h1 className="text-3xl font-semibold text-center dark:text-gray-200 underline">
+          Sign in
+        </h1>
+
+        <form className="mt-6" onSubmit={handleLogin} noValidate>
+
+          <div className="mb-2">
+            <label htmlFor="username" className="block text-sm font-semibold text-gray-800 dark:text-gray-200">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              name="username"
+              value={credentials.username}
+              placeholder="Username or Email Address"
+              onChange={handleChange}
+              autoComplete="username"
+              className="block w-full px-4 py-2 mt-2 text-gray-800 dark:text-gray-400 bg-white dark:bg-secondary-dark-bg border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-800 dark:text-gray-200">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              name="password"
+              value={credentials.password}
+              placeholder="Enter your password"
+              onChange={handleChange}
+              autoComplete="current-password"
+              className="block w-full px-4 py-2 mt-2 text-gray-800 dark:text-gray-400 bg-white dark:bg-secondary-dark-bg border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+            />
+          </div>
+
+          {error && (
+            <p role="alert" className="text-sm my-2 text-red-600">
+              {error.message}
+            </p>
+          )}
+
+          <div className="mt-6">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: currentColor }}
+            >
+              {loading ? 'Signing in…' : 'Login'}
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
   )
 }
 
