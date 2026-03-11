@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { BsFillCalendar2EventFill, BsFillPersonFill } from "react-icons/bs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { DateRange } from "react-date-range";
@@ -21,21 +21,35 @@ const HeadingSearch = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const dateRef = useRef(null);
+  const optionsRef = useRef(null);
+
   /* Sync local state with context */
-  useEffect(() => {
-    setSearchDates(dates);
-  }, [dates]);
+  useEffect(() => { setSearchDates(dates); }, [dates]);
+  useEffect(() => { setSearchOptions(options); }, [options]);
 
+  /* Close dropdowns on outside click */
   useEffect(() => {
-    setSearchOptions(options);
-  }, [options]);
+    const handleClickOutside = (e) => {
+      if (dateRef.current && !dateRef.current.contains(e.target)) {
+        setOpenDate(false);
+      }
+      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
+        setOpenOptions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  /* Date handler */
   const handleDateRangeChange = (item) => {
     setSearchDates([item.selection]);
+    const { startDate, endDate } = item.selection;
+    if (startDate && endDate && startDate.getTime() !== endDate.getTime()) {
+      setOpenDate(false);
+    }
   };
 
-  /* Options handler */
   const handleSearchOptions = (name, type) => {
     setSearchOptions((prev) => ({
       ...prev,
@@ -44,28 +58,32 @@ const HeadingSearch = () => {
   };
 
   const handleSearch = () => {
-    if (location.pathname !== "/booking") {
-      navigate("/booking");
-    }
+    if (location.pathname !== "/booking") navigate("/booking");
     search(searchDates, searchOptions);
   };
 
   return (
     <div className="headerSearchContainer">
-      {/* DATE */}
-      <div className="headerSearchItem">
+
+      {/* ── DATE ── */}
+      <div
+        className="headerSearchItem"
+        ref={dateRef}
+        onClick={() => { setOpenDate(!openDate); setOpenOptions(false); }}
+      >
         <BsFillCalendar2EventFill className="headerIcon" />
-        <span
-          className="headerSearchText"
-          onClick={() => setOpenDate(!openDate)}
-        >
-          {`${format(new Date(searchDates[0].startDate), "dd/MM/yyyy")} to ${format(
-            new Date(searchDates[0].endDate),
-            "dd/MM/yyyy"
-          )}`}
-        </span>
+        <div className="headerSearchItem__inner">
+          <span className="headerSearchItem__label">Check-in / Check-out</span>
+          <span className="headerSearchText">
+            {`${format(new Date(searchDates[0].startDate), "dd MMM yyyy")}  →  ${format(
+              new Date(searchDates[0].endDate),
+              "dd MMM yyyy"
+            )}`}
+          </span>
+        </div>
+
         {openDate && (
-          <div className="date" onMouseLeave={() => setOpenDate(false)}>
+          <div className="date" onClick={(e) => e.stopPropagation()}>
             <DateRange
               editableDateInputs
               onChange={handleDateRangeChange}
@@ -77,71 +95,58 @@ const HeadingSearch = () => {
         )}
       </div>
 
-      {/* OPTIONS */}
-      <div className="headerSearchItem">
+      {/* ── GUESTS / ROOMS ── */}
+      <div
+        className="headerSearchItem"
+        ref={optionsRef}
+        onClick={() => { setOpenOptions((p) => !p); setOpenDate(false); }}
+      >
         <BsFillPersonFill className="headerIcon" />
-        <span
-          className="headerSearchText"
-          onClick={() => setOpenOptions(!openOptions)}
-        >
-          {`${searchOptions.adults} adult · ${searchOptions.children} children · ${searchOptions.rooms} room`}
-        </span>
+        <div className="headerSearchItem__inner">
+          <span className="headerSearchItem__label">Guests &amp; Rooms</span>
+          <span className="headerSearchText">
+            {`${searchOptions.adults} adult · ${searchOptions.children} children · ${searchOptions.rooms} room`}
+          </span>
+        </div>
+
         {openOptions && (
-          <div className="searchOptions" onMouseLeave={() => setOpenOptions(false)}>
-            {/* ADULT */}
-            <div className="optionItem">
-              <span>Adult</span>
-              <div className="optionCounter">
-                <button
-                  disabled={searchOptions.adults <= 1}
-                  onClick={() => handleSearchOptions("adults", "decrement")}
-                >
-                  -
-                </button>
-                <span>{searchOptions.adults}</span>
-                <button onClick={() => handleSearchOptions("adults", "increment")}>+</button>
-              </div>
-            </div>
+          <div className="searchOptions" onClick={(e) => e.stopPropagation()}>
 
-            {/* CHILDREN */}
-            <div className="optionItem">
-              <span>Children</span>
-              <div className="optionCounter">
-                <button
-                  disabled={searchOptions.children <= 0}
-                  onClick={() => handleSearchOptions("children", "decrement")}
-                >
-                  -
-                </button>
-                <span>{searchOptions.children}</span>
-                <button onClick={() => handleSearchOptions("children", "increment")}>+</button>
+            {[
+              { key: "adults",   label: "Adults",   min: 1 },
+              { key: "children", label: "Children", min: 0 },
+              { key: "rooms",    label: "Rooms",    min: 1 },
+            ].map(({ key, label, min }) => (
+              <div className="optionItem" key={key}>
+                <span>{label}</span>
+                <div className="optionCounter">
+                  <button
+                    disabled={searchOptions[key] <= min}
+                    onClick={(e) => { e.stopPropagation(); handleSearchOptions(key, "decrement"); }}
+                  >
+                    −
+                  </button>
+                  <span>{searchOptions[key]}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleSearchOptions(key, "increment"); }}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-            </div>
+            ))}
 
-            {/* ROOMS */}
-            <div className="optionItem">
-              <span>Room</span>
-              <div className="optionCounter">
-                <button
-                  disabled={searchOptions.rooms <= 1}
-                  onClick={() => handleSearchOptions("rooms", "decrement")}
-                >
-                  -
-                </button>
-                <span>{searchOptions.rooms}</span>
-                <button onClick={() => handleSearchOptions("rooms", "increment")}>+</button>
-              </div>
-            </div>
           </div>
         )}
       </div>
 
-      {/* SEARCH BUTTON */}
+      {/* ── CTA ── */}
       <div className="headerSearchCTA">
         <button className="headingButton" onClick={handleSearch}>
-          Check Availability
+          <span>Check Availability</span>
         </button>
       </div>
+
     </div>
   );
 };

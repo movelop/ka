@@ -1,89 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+/* =============================
+   BASE
+============================= */
 .small {
-    width: 100vw;
-    height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4rem;
-    position: relative;
+  width: 100vw;
+  height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: visible;
 }
 
+/* =============================
+   OVERLAY
+============================= */
 .smallOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: rgba(20, 39, 74, 0.5);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 12, 10, 0.6) 0%,
+    rgba(10, 12, 10, 0.3) 50%,
+    rgba(10, 12, 10, 0.65) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
 }
 
+/* Vignette */
+.small::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* =============================
+   TEXT
+============================= */
 .smallText {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin: auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  animation: smallReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes smallReveal {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Flanking gold lines above title */
+.smallText::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+  margin: 0 auto;
 }
 
 .smallText h3 {
-    font-family: var(--font-heading);
-    font-style: normal;
-    font-weight: bolder;
-    font-size: 48px;
-    color: var(--white-color);
-
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 58px;
+  letter-spacing: 0.08em;
+  color: var(--white-color, #fff);
+  line-height: 1;
 }
 
+/* Gold rule below title */
+.smallText::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+  margin: 0 auto;
+}
+
+/* =============================
+   SEARCH BAR (room type)
+============================= */
 .smallHeadingSearch {
-    position: absolute;
-    bottom: -25px;
-    width: 100%;
-    z-index: 99;
-    display: flex;
-    justify-content: center;
+  position: absolute;
+  bottom: -28px;
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
 }
 
-
-@media screen and (min-width:2000px) {
-    .smallText h3 {
-        font-size: 79px;
-    }
+/* =============================
+   RESPONSIVE
+============================= */
+@media screen and (min-width: 2000px) {
+  .small { height: 60vh; }
+  .smallText h3 { font-size: 90px; }
 }
 
-@media screen and (max-width: 1550px) {
-    .smallText h3 {
-        font-size: 38px;
-    }
-}
-
-@media screen and (max-width: 1150px) {
-    .smallText h3 {
-        font-size: 34px;
-    }
+@media screen and (max-width: 1200px) {
+  .smallText h3 { font-size: 48px; }
 }
 
 @media screen and (max-width: 850px) {
-    .small {
-        height: 50vh;
-    }
-
-    .smallText h3 {
-        font-size: 36px;
-    }
+  .small { height: 45vh; }
+  .smallText h3 { font-size: 40px; }
 }
 
 @media screen and (max-width: 550px) {
-    .smallText h3 {
-        font-size: 28px;
-    }
+  .small { height: 40vh; }
+  .smallText h3 { font-size: 30px; letter-spacing: 0.06em; }
 }
 
 @media screen and (max-width: 385px) {
-
-    .smallText h3 {
-        font-size: 22px;
-    }
+  .smallText h3 { font-size: 24px; }
 }
-    

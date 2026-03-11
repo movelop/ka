@@ -1,274 +1,299 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+/* ================================
+   PAGE WRAPPER
+================================= */
 .confirmation {
-    margin-top: 3rem;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    color: var(--primary-color);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 2rem;
+  margin-top: 4rem;
+  margin-bottom: 6rem;
 }
 
 .confirmationContainer {
-    width: 100%;
-    max-width: 1380px;
-    min-height: 50vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 10px;
+  width: 100%;
+  max-width: 680px;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
+/* ================================
+   PAGE TITLE
+================================= */
 .confirmationContainer > h1 {
-    font-size: 32px;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 48px;
+  letter-spacing: 0.04em;
+  color: var(--primary-color, #1a1a18);
+  text-align: center;
 }
 
+.confirmation__rule {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+}
+
+/* ================================
+   CONFIRMATION CARD
+================================= */
 .confirm {
-    width: 80%;
-    /* height: 300px; */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    background-color: #c3d6f8;
-    gap: 10px;
-    padding: 2rem;
+  width: 100%;
+  background: #faf7f2;
+  border: 1px solid rgba(184, 145, 63, 0.2);
+  padding: 2.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  position: relative;
 }
 
-.confirm > h1 {
-    font-size: 22px;
+/* Gold top accent */
+.confirm::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--gold-color, #b8913f), transparent);
 }
 
+/* ================================
+   LOGO BLOCK
+================================= */
 .foundLogo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
 }
 
 .logoImage {
-    width: 180px;
-    height: 180px;
-    margin: -40px 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(184, 145, 63, 0.3);
 }
 
 .logoImage img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .foundLogo h6 {
-    font-family: var(--font-heading);
-    text-transform: capitalize;
-    font-size: 24px;
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
 }
 
-.confirm > .confirmDetail {
-    display: flex;
-    justify-content: space-between;
-    width: 50%;
-    padding: 1rem 0;
+/* ================================
+   CONFIRMATION CODE
+================================= */
+.confirm__codeLabel {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 24, 0.45);
+  margin-bottom: 0.4rem;
 }
 
-.alert {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    font-size: 14px;
-    color: #af2d2d;
+.confirm__code {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 38px;
+  letter-spacing: 0.12em;
+  color: var(--primary-color, #1a1a18);
+  margin-bottom: 2rem;
 }
 
+/* ================================
+   DETAIL ROWS
+================================= */
+.confirmDetail {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(26, 26, 24, 0.06);
+  gap: 1rem;
+}
+
+.confirmDetail:last-of-type {
+  border-bottom: none;
+}
+
+.confirmDetail h3 {
+  font-family: 'Jost', sans-serif;
+}
+
+.confirmDetail h3:first-child {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 24, 0.45);
+  flex-shrink: 0;
+}
+
+.confirmDetail h3:last-child {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--primary-color, #1a1a18);
+  text-align: right;
+}
+
+/* ================================
+   ALERTS
+================================= */
+.confirm .alert {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(175, 45, 45, 0.06);
+  border-left: 2px solid #b94a48;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: #b94a48;
+  line-height: 1.6;
+}
+
+.confirm .alert + .alert {
+  margin-top: 0.5rem;
+}
+
+/* ================================
+   BUTTONS
+================================= */
 .confirmButton {
-    margin-top: 1rem;
+  margin-top: 2rem;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 .cButton {
-    width: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    border: none;
-    outline: none;
-    background-color: var(--primary-color);
-    color: var(--white-color);
-    gap: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--primary-color, #1a1a18);
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  padding: 0.85em 2em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+  text-decoration: none;
 }
 
+.cButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-color, #1a1a18);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.cButton span {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cButton:hover::before {
+  transform: translateX(0);
+}
+
+.cButton:hover {
+  color: var(--white-color, #fff);
+}
+
+/* Error state */
+.confirmationContainer > p {
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: #888;
+  text-align: center;
+}
+
+/* ================================
+   PRINT STYLES
+================================= */
+@media print {
+  .small,
+  .testimonials,
+  .footer,
+  .confirmationContainer > h1,
+  .confirmation__rule,
+  .confirmButton {
+    display: none !important;
+  }
+
+  .confirmation { margin-top: 0; padding: 0; }
+  .confirm { border: none; background: #fff; padding: 1rem; }
+  .confirm::before { display: none; }
+  .confirmDetail { padding: 0.4rem 0; }
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
 @media screen and (min-width: 2000px) {
-    .confirmationContainer {
-        max-width: 1980px;
-    }
-
-    .confirmationContainer > h1 {
-        font-size: 48px;
-    }
-
-    .confirm > h1 {
-        font-size: 38px;
-    }
-
-    .logoImage {
-        width: 290px;
-        height: 290px;
-        margin: -70px 0;
-    }
-
-    .foundLogo h6 {
-        font-size: 38px;
-    }
-
-    .confirm > .confirmDetail {
-        width: 60%;
-        padding: 2rem 0;
-    }
-
-    .confirm > .confirmDetail h3 {
-        font-size: 32px;
-    }
-
-    .alert  {
-        font-size: 24px;
-    }
-
-    .cButton {
-        font-size: 32px;
-        width: 200px;
-        padding: 20px;
-    }
+  .confirmationContainer { max-width: 1000px; }
+  .confirmationContainer > h1 { font-size: 72px; }
+  .confirm__code { font-size: 56px; }
+  .confirmDetail h3:first-child { font-size: 14px; }
+  .confirmDetail h3:last-child { font-size: 18px; }
+  .confirm { padding: 3.5rem 5rem; }
+  .cButton { font-size: 16px; padding: 1em 3em; }
 }
 
-@media screen and (max-width: 1550px) {
-    .confirmationContainer {
-        max-width: 1024px;
-    }
-
-    .confirmationContainer > h1 {
-        font-size: 30px;
-    }
-
-    .confirm > h1 {
-        font-size: 20px;
-    }
-
-    .confirm > .confirmDetail h3 {
-        font-size: 14px;
-    }
-
-    .cButton {
-        width: 120px;
-    }
-}
-
-@media screen and (max-width: 1150px) {
-    .confirmationContainer {
-        max-width: 850px;
-    }
-
-    .confirmationContainer > h1 {
-        font-size: 28px;
-    }
-
-    .confirm {
-        width: 70%;
-    }
-
-    .confirm > h1 {
-        font-size: 18px;
-    }
-
-    .confirm > .confirmDetail {
-        width: 60%;
-    }
-
-    .alert {
-        margin-top: 5px;
-        font-size: 14px;
-    }
-
-    .cButton {
-        width: 100px;
-    }
-}
-
-@media screen and (max-width: 850px){
-   .confirmationContainer {
-        width: 90%;
-   } 
-
-   .confirm > .confirmDetail {
-        width: 65%;
-    }
-
-   .confirm {
-        width: 80%;
-   }
+@media screen and (max-width: 768px) {
+  .confirmationContainer > h1 { font-size: 38px; }
+  .confirm { padding: 2rem; }
+  .confirm__code { font-size: 30px; }
+  .confirmDetail h3:last-child { font-size: 12px; }
 }
 
 @media screen and (max-width: 550px) {
-    .confirm {
-        width: 90%;
-    }
-
-    .logoImage {
-        width: 140px;
-        height: 140px;
-        margin: -30px 0;
-    } 
-
-    .foundLogo h6 {
-        font-size: 17px;
-    }
-
-    .confirm > .confirmDetail {
-        width: 95%;
-    }
-
-    .confirm > .confirmDetail h3 {
-        font-size: 12px;
-    }
-
-    .alert {
-        font-size: 12px;
-    }
-
-    .cButton {
-        width: 90px;
-    }
+  .confirmation { padding: 0 1rem; margin-top: 2.5rem; }
+  .confirmationContainer > h1 { font-size: 28px; }
+  .confirm { padding: 1.75rem 1.25rem; }
+  .confirm__code { font-size: 26px; letter-spacing: 0.08em; }
+  .confirmDetail h3:first-child { font-size: 9px; }
+  .confirmDetail h3:last-child { font-size: 11px; }
+  .cButton { font-size: 10px; padding: 0.85em 1.5em; }
 }
 
-@media screen and (max-width:385px) {
-    .confirmationContainer > h1 {
-        font-size: 22px;
-    }
-
-    .confirm {
-        width: 100%;
-        padding: 0.75rem;
-    }
-
-    .confirm > .confirmDetail h3 {
-        font-size: 10px;
-    }
-
-    .confirm > h1 {
-        font-size: 14px;
-    }
+@media screen and (max-width: 385px) {
+  .confirmationContainer > h1 { font-size: 22px; }
+  .confirm { padding: 1.25rem 1rem; }
 }
-
-@media print {
-    .small,
-    .testimonials,
-    .footer,
-    .confirmationContainer > h1 {
-        display: none;
-    }
-
-    .confirm {
-        width: 80%;
-    }
-
-    .confirm > .confirmDetail {
-        width: 90%;
-    }
-}
-

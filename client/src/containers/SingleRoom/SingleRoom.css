@@ -1,206 +1,372 @@
-/* Container for the whole Single Room page */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+/* ================================
+   PAGE WRAPPER
+================================= */
 .singleRoom {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 2rem;
+  margin-top: 4rem;
+  margin-bottom: 6rem;
 }
 
-/* Main content container */
 .singleRoomContainer {
-    width: 100%;
-    max-width: 1380px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    position: relative;
-    padding: 0 10px;
+  width: 100%;
+  max-width: 1280px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-/* Top "Book Now" button */
-.bookNow {
-    position: absolute;
-    top: 10px;
-    right: 0;
-    border: none;
-    padding: 10px 20px;
-    background-color: var(--gold-color);
-    color: var(--white-color);
-    font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+/* ================================
+   TITLE ROW
+================================= */
+.singleRoomHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-/* Room title */
+.singleRoomTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .singleRoomTitle {
-    font-size: 32px;
-    text-transform: uppercase;
-    color: var(--primary-color);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 48px;
+  letter-spacing: 0.04em;
+  color: var(--primary-color, #1a1a18);
+  line-height: 1;
 }
 
-/* Highlight text under title */
 .singleRoomHighlight {
-    font-size: 18px;
-    color: #008009;
-    font-weight: 500;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #5a8a5e;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Slider wrapper */
+.singleRoomHighlight::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5a8a5e;
+  flex-shrink: 0;
+}
+
+/* Book now — top right */
+.bookNow {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--primary-color, #1a1a18);
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  padding: 0.85em 2em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bookNow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-color, #1a1a18);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.bookNow span {
+  position: relative;
+  z-index: 1;
+}
+
+.bookNow:hover::before {
+  transform: translateX(0);
+}
+
+.bookNow:hover {
+  color: var(--white-color, #fff);
+}
+
+/* ================================
+   SLIDER
+================================= */
 .singleRoomImages {
-    width: 100%;
-    margin-top: 20px;
+  width: 100%;
 }
 
-/* Each slide wrapper */
 .singleRoomImgWrapper {
-    width: 100%;
-    height: 650px; /* ensures images show properly */
+  width: 100%;
+  height: 580px;
+  overflow: hidden;
 }
 
 .singleRoomImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-/* Details section */
+/* Force slick slides to respect wrapper height */
+.singleRoomImages .slick-slider,
+.singleRoomImages .slick-list,
+.singleRoomImages .slick-track {
+  height: 100%;
+}
+
+.singleRoomImages .slick-slide {
+  height: 580px;
+}
+
+.singleRoomImages .slick-slide > div {
+  height: 100%;
+}
+
+/* Slick dot overrides */
+.singleRoomImages .slick-dots li button:before {
+  color: var(--gold-color, #b8913f);
+  font-size: 8px;
+  opacity: 0.4;
+}
+
+.singleRoomImages .slick-dots li.slick-active button:before {
+  color: var(--gold-color, #b8913f);
+  opacity: 1;
+}
+
+.singleRoomImages .slick-prev,
+.singleRoomImages .slick-next {
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+}
+
+.singleRoomImages .slick-prev { left: 16px; }
+.singleRoomImages .slick-next { right: 16px; }
+
+.singleRoomImages .slick-prev:before,
+.singleRoomImages .slick-next:before {
+  font-size: 28px;
+  color: rgba(255,255,255,0.85);
+}
+
+/* ================================
+   DETAILS SECTION
+================================= */
 .singleRoomDetails {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    margin-top: 20px;
-    flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2.5rem;
+  align-items: start;
+  margin-top: 1rem;
 }
 
-/* Text section of details */
+/* ── Text column ── */
 .singleRoomDetailsTexts {
-    flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.singleRoomDetailsTexts .singleRoomTitle {
+  font-size: 36px;
 }
 
 .singleRoomDesc {
-    font-size: 18px;
-    margin-top: 20px;
-    color: var(--primary-color);
-    line-height: 1.5em;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #555550;
 }
 
-/* Price and booking section */
+/* ── Price card ── */
 .singleRoomDetailsPrice {
-    flex: 1;
-    background-color: #fcf6ec;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    border-radius: 5px;
+  background: #faf7f2;
+  border: 1px solid rgba(184, 145, 63, 0.2);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 90px; /* sticks just below navbar */
+}
+
+/* Gold top accent */
+.singleRoomDetailsPrice::before {
+  content: '';
+  display: block;
+  height: 2px;
+  background: linear-gradient(to right, var(--gold-color, #b8913f), transparent);
+  margin-bottom: 0.25rem;
 }
 
 .singleRoomDetailsPrice h1 {
-    font-size: 24px;
-    color: #2a4983;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--primary-color, #1a1a18);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
 }
 
 .singleRoomDetailsPrice span {
-    font-size: 18px;
-    color: #6278a0;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: #777770;
+  line-height: 1.7;
 }
 
+/* Price row */
 .singleRoomDetailsPrice h2 {
-    font-weight: 300;
-    font-size: 28px;
-    color: var(--primary-color);
-    display: flex;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 36px;
+  color: var(--primary-color, #1a1a18);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  border-top: 1px solid rgba(26, 26, 24, 0.08);
+  padding-top: 1rem;
 }
 
 .singleRoomDetailsPrice h2 b {
-    display: flex;
-    align-items: center;
-    margin-right: 5px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
 }
 
 .singleRoomDetailsPrice h2 b span {
-    display: flex;
-    align-items: center;
-    font-size: 28px;
+  display: flex;
+  align-items: center;
+  font-size: 36px;
+  color: var(--primary-color, #1a1a18);
+}
+
+.singleRoomDetailsPrice h2 small {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  color: #888;
+  margin-left: 4px;
+  align-self: flex-end;
+  padding-bottom: 6px;
+}
+
+/* Book button */
+.singleRoomDetailsPrice a {
+  text-decoration: none;
 }
 
 .singleRoomDetailsPrice button {
-    width: 100%;
-    border: none;
-    padding: 10px 20px;
-    background-color: var(--gold-color);
-    color: var(--white-color);
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px;
-    transition: background 0.3s ease;
+  width: 100%;
+  border: none;
+  padding: 1em 0;
+  background: var(--primary-color, #1a1a18);
+  color: var(--white-color, #fff);
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.35s ease;
 }
 
-.singleRoomDetailsPrice button:hover {
-    background-color: #c89b3a;
+.singleRoomDetailsPrice button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gold-color, #b8913f);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-/* Responsive adjustments */
-
-/* Ultra-wide screens */
-@media screen and (min-width:2000px) {
-    .singleRoomContainer {
-        max-width: 1980px;
-    }
-
-    .bookNow { font-size: 28px; }
-    .singleRoomTitle { font-size: 48px; }
-    .singleRoomHighlight { font-size: 28px; }
-    .singleRoomImgWrapper { height: 450px; }
-    .singleRoomDesc { font-size: 28px; }
-    .singleRoomDetailsPrice h1 { font-size: 32px; }
-    .singleRoomDetailsPrice span { font-size: 28px; }
-    .singleRoomDetailsPrice h2 { font-size: 36px; }
-    .singleRoomDetailsPrice h2 b span { font-size: 32px; }
-    .singleRoomDetailsPrice button { font-size: 26px; }
+.singleRoomDetailsPrice button span {
+  position: relative;
+  z-index: 1;
 }
 
-/* Medium screens */
-@media screen and (max-width:1550px) {
-    .singleRoomContainer { max-width: 1024px; }
-    .bookNow { font-size: 14px; }
-    .singleRoomTitle { font-size: 24px; }
-    .singleRoomHighlight { font-size: 16px; }
-    .singleRoomImgWrapper { height: 250px; }
-    .singleRoomDesc { font-size: 16px; }
-    .singleRoomDetailsPrice h1 { font-size: 19px; }
-    .singleRoomDetailsPrice span { font-size: 13px; }
-    .singleRoomDetailsPrice h2 { font-size: 20px; }
-    .singleRoomDetailsPrice h2 b span { font-size: 20px; }
-    .singleRoomDetailsPrice button { font-size: 14px; }
+.singleRoomDetailsPrice button:hover::before {
+  transform: translateX(0);
 }
 
-/* Smaller screens */
-@media screen and (max-width:1150px) {
-    .singleRoomContainer { max-width: 850px; }
-    .singleRoomDesc { font-size: 14px; }
+/* ================================
+   RESPONSIVE
+================================= */
+@media screen and (min-width: 2000px) {
+  .singleRoomContainer { max-width: 1900px; }
+  .singleRoomTitle { font-size: 72px; }
+  .singleRoomImgWrapper { height: 800px; }
+  .singleRoomDesc { font-size: 20px; }
+  .singleRoomDetails { grid-template-columns: 1fr 480px; gap: 4rem; }
+  .singleRoomDetailsPrice h1 { font-size: 32px; }
+  .singleRoomDetailsPrice h2,
+  .singleRoomDetailsPrice h2 b span { font-size: 52px; }
+  .singleRoomDetailsPrice button { font-size: 16px; }
+  .singleRoomHighlight { font-size: 18px; }
 }
 
-/* Mobile tablets */
-@media screen and (max-width:850px) {
-    .singleRoomContainer { width: 90%; }
-    .singleRoomDetailsPrice { flex: 1.5; }
+@media screen and (max-width: 1200px) {
+  .singleRoomContainer { max-width: 960px; }
+  .singleRoomTitle { font-size: 38px; }
+  .singleRoomImgWrapper { height: 440px; }
+  .singleRoomImages .slick-slide { height: 440px; }
+  .singleRoomDetails { grid-template-columns: 1fr 300px; }
 }
 
-/* Phones */
-@media screen and (max-width:550px) {
-    .bookNow { display: none; }
-    .singleRoomTitle { font-size: 18px; }
-    .singleRoomHighlight { font-size: 12px; }
-    .singleRoomImgWrapper { height: 200px; }
-    .singleRoomDetails { flex-direction: column; }
-    .singleRoomDesc { font-size: 12px; }
+@media screen and (max-width: 900px) {
+  .singleRoomDetails {
+    grid-template-columns: 1fr;
+  }
+  .singleRoomDetailsPrice {
+    position: static;
+  }
+  .singleRoomTitle { font-size: 34px; }
 }
 
-/* Very small phones */
-@media screen and (max-width:385px) {
-    .singleRoomHighlight { font-size: 11px; margin-bottom: 10px; }
+@media screen and (max-width: 550px) {
+  .singleRoom { margin-top: 2rem; padding: 0 1rem; }
+  .bookNow { display: none; }
+  .singleRoomTitle { font-size: 26px; }
+  .singleRoomHighlight { font-size: 12px; }
+  .singleRoomImgWrapper { height: 260px; }
+  .singleRoomImages .slick-slide { height: 260px; }
+  .singleRoomDesc { font-size: 13px; }
+  .singleRoomDetailsPrice { padding: 1.5rem; }
+  .singleRoomDetailsPrice h1 { font-size: 18px; }
+  .singleRoomDetailsPrice h2,
+  .singleRoomDetailsPrice h2 b span { font-size: 28px; }
+}
+
+@media screen and (max-width: 385px) {
+  .singleRoomTitle { font-size: 22px; }
+  .singleRoomImgWrapper { height: 220px; }
+  .singleRoomImages .slick-slide { height: 220px; }
 }

@@ -1,181 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
 /* ================================
-   AVAILABILITY CARD
+   CARD
 ================================= */
 .availabilityCard {
-    display: flex;
-    padding: 1rem;
-    margin: 1.5rem 0;
-    box-shadow: 0 5px 15px 1px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    background-color: var(--white-color);
+  display: grid;
+  grid-template-columns: 260px 1fr 200px;
+  background: var(--white-color, #fff);
+  border: 1px solid rgba(26, 26, 24, 0.08);
+  overflow: hidden;
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
 }
 
+.availabilityCard:hover {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.09);
+  transform: translateY(-3px);
+}
+
+/* ================================
+   IMAGE
+================================= */
 .availabiltyCardImg {
-    flex: 30%;
-    height: 200px;
+  height: 100%;
+  min-height: 200px;
+  overflow: hidden;
+  position: relative;
 }
 
 .availabiltyCardImg img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+.availabilityCard:hover .availabiltyCardImg img {
+  transform: scale(1.04);
+}
+
+/* ================================
+   INFO
+================================= */
 .availabilityCardInfo {
-    flex: 50%;
-    display: flex;
-    flex-direction: column;
-    padding: 0 1rem;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 2rem;
+  gap: 0.75rem;
+  border-right: 1px solid rgba(26, 26, 24, 0.07);
 }
 
-.availabilityCardInfo > h2 {
-    font-family: var(--font-heading);
-    font-size: 24px;
-    font-weight: bolder;
-    margin-bottom: 4px;
+.availabilityCardInfo h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: 26px;
+  letter-spacing: 0.03em;
+  color: var(--primary-color, #1a1a18);
+  line-height: 1.1;
 }
 
 .location {
-    color: #435a85;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--gold-color, #b8913f);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.05em;
 }
 
+/* Details grid */
 .details {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+  margin-top: 0.5rem;
 }
 
 .details > div {
-    flex: 50%;
-    line-height: 1.4;
-    margin: 5px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .details > div > label {
-    font-weight: bold;
+  font-family: 'Jost', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
 }
 
+.details > div > p {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--primary-color, #1a1a18);
+}
+
+/* ================================
+   PRICE PANEL
+================================= */
 .availabilityCardPrice {
-    flex: 20%;
-    text-align: end;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 1.75rem 1.5rem;
+  gap: 1rem;
+  text-align: right;
 }
 
-.availabilityCardPrice > div > label {
-    color: #435a85;
-    font-weight: bold;
+.daily,
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.availabilityCardPrice > div > h6,
-.availabilityCardPrice > div > h4 {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
+.availabilityCardPrice label {
+  font-family: 'Jost', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
 }
 
-.availabilityCardPrice > div > h6 > span,
-.availabilityCardPrice > div > h4 > span {
-    display: flex;
-    align-items: center;
+.availabilityCardPrice h6 {
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #555550;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
 }
 
-.availabilityCardPrice > div > h6 {
-    font-size: 1rem;
+.availabilityCardPrice h6 span,
+.availabilityCardPrice h4 span {
+  display: flex;
+  align-items: center;
 }
 
-.availabilityCardPrice > div > h4 {
-    font-size: 1.5rem;
+/* Separator */
+.total {
+  border-top: 1px solid rgba(26, 26, 24, 0.08);
+  padding-top: 0.75rem;
+  width: 100%;
 }
 
+.availabilityCardPrice h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--primary-color, #1a1a18);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
+}
+
+/* ================================
+   BUTTONS
+================================= */
 .availabilityButton {
-    margin-top: 1rem;
-    width: 120px;
-    font-size: 16px;
-    padding: 10px;
-    background-color: var(--white-color);
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s ease;
+  width: 100%;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.85em 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+  border: 1px solid var(--primary-color, #1a1a18);
+  background: transparent;
+  color: var(--primary-color, #1a1a18);
 }
 
-.availabilityCardPrice > button:hover {
-    background-color: var(--primary-color);
-    color: var(--white-color);
+.availabilityButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-color, #1a1a18);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.availabilityButton span {
+  position: relative;
+  z-index: 1;
+}
+
+.availabilityButton:hover::before {
+  transform: translateX(0);
+}
+
+.availabilityButton:hover {
+  color: var(--white-color, #fff);
+}
+
+/* Unavailable state */
+.availabilityButton--unavailable {
+  border-color: rgba(26, 26, 24, 0.2);
+  color: rgba(26, 26, 24, 0.3);
+  cursor: not-allowed;
+}
+
+.availabilityButton--unavailable::before {
+  display: none;
 }
 
 /* ================================
    RESPONSIVE
 ================================= */
-
-/* Extra large screens */
 @media screen and (min-width: 2000px) {
-    .availabilityCard {
-        padding: 2rem;
-        margin: 2.5rem 0;
-    }
-
-    .availabilityCardInfo h2 { font-size: 38px; }
-    .location { font-size: 24px; gap: 6px; }
-    .details { margin-top: 20px; }
-    .details > div > label,
-    .details > div > p { font-size: 28px; line-height: 1.6; }
-
-    .availabilityCardPrice > div > label { font-size: 28px; }
-    .availabilityCardPrice > div > h6 { font-size: 1.75rem; }
-    .availabilityCardPrice > div > h4 { font-size: 2.5rem; }
-
-    .availabilityButton { width: 180px; font-size: 28px; padding: 20px; }
+  .availabilityCard { grid-template-columns: 380px 1fr 280px; }
+  .availabiltyCardImg { min-height: 280px; }
+  .availabilityCardInfo h2 { font-size: 38px; }
+  .location { font-size: 16px; }
+  .details > div > label { font-size: 12px; }
+  .details > div > p { font-size: 18px; }
+  .availabilityCardPrice h6 { font-size: 20px; }
+  .availabilityCardPrice h4 { font-size: 38px; }
+  .availabilityButton { font-size: 16px; }
 }
 
-/* Large screens */
-@media screen and (max-width: 1550px) {
-    .availabilityCardInfo h2 { font-size: 22px; }
-    .location { font-size: 14px; }
-    .details > div > label { font-size: 16px; }
-    .details > div > p { font-size: 15px; }
-    .availabilityCardPrice > div > label { font-size: 16px; }
-    .availabilityCardPrice > div > h6 { font-size: 1rem; }
-    .availabilityCardPrice > div > h4 { font-size: 1.3rem; }
-    .availabilityButton { width: 100px; font-size: 15px; }
+@media screen and (max-width: 1024px) {
+  .availabilityCard { grid-template-columns: 200px 1fr 180px; }
+  .availabilityCardInfo h2 { font-size: 22px; }
+  .availabilityCardPrice h4 { font-size: 22px; }
 }
 
-/* Medium screens */
-@media screen and (max-width: 1150px) {
-    .availabilityCardInfo h2 { font-size: 20px; }
-    .location { font-size: 12px; }
-    .details > div > label { font-size: 14px; }
-    .details > div > p { font-size: 13px; }
-    .availabilityCardPrice > div > label { font-size: 14px; }
-    .availabilityCardPrice > div > h6 { font-size: 0.85rem; }
-    .availabilityCardPrice > div > h4 { font-size: 1.1rem; }
-    .availabilityButton { width: 90px; font-size: 14px; }
+@media screen and (max-width: 768px) {
+  .availabilityCard {
+    grid-template-columns: 1fr;
+  }
+
+  .availabiltyCardImg {
+    height: 220px;
+    min-height: unset;
+  }
+
+  .availabilityCardInfo {
+    border-right: none;
+    border-bottom: 1px solid rgba(26, 26, 24, 0.07);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .availabilityCardPrice {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+  }
+
+  .total { border-top: none; padding-top: 0; width: auto; }
+
+  .availabilityButton { width: auto; padding: 0.85em 2em; }
 }
 
-/* Small screens */
-@media screen and (max-width: 850px) {
-    .availabilityCard { flex-wrap: wrap; }
-    .availabiltyCardImg { flex: 100%; margin-top: 10px; }
-    .availabilityCardInfo { flex: 40%; margin-top: 10px; }
-    .availabilityCardPrice { flex: 100%; margin-top: 10px; text-align: right; }
-}
-
-/* Extra small screens */
 @media screen and (max-width: 550px) {
-    .availabilityCardInfo { flex: 100%; }
-    .availabilityCardPrice { flex: 100%; justify-content: space-between; flex-wrap: wrap; margin-top: 1rem; text-align: right; }
-    .availabilityCardPrice > div > label { font-size: 12px; }
-    .availabilityCardPrice > div > h6 { justify-content: flex-start; }
-    .availabilityCardPrice > button { width: 100%; }
+  .availabiltyCardImg { height: 180px; }
+  .availabilityCardInfo h2 { font-size: 20px; }
+  .availabilityCardPrice { flex-direction: column; align-items: stretch; text-align: right; }
+  .availabilityButton { width: 100%; }
 }

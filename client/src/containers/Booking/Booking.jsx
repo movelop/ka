@@ -17,7 +17,7 @@ import api from "../../hooks/api";
 import "./Booking.css";
 
 const Booking = () => {
-  const navigate = useNavigate();
+   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     confirmation: "",
@@ -66,10 +66,13 @@ const Booking = () => {
 
   return (
     <div>
-      <HeadingSmall text="Make A Reservation" img={images.lobby} />
+      <HeadingSmall text="Make a Reservation" img={images.lobby} />
 
       <div className="booking">
+
+        {/* ── Check existing booking ── */}
         <div className="checkReservation">
+          <span className="checkReservation__eyebrow">Manage Your Stay</span>
           <h1>Already have a booking?</h1>
 
           <form className="checkReservationForm" onSubmit={handleSubmit}>
@@ -77,50 +80,52 @@ const Booking = () => {
               maxLength="12"
               name="confirmation"
               type="text"
-              placeholder="Enter Confirmation Code"
+              placeholder="Confirmation code"
               value={formData.confirmation}
               onChange={handleChange}
             />
-
             <input
               name="email"
               type="text"
-              placeholder="Or Enter Email"
+              placeholder="Or your email address"
               value={formData.email}
               onChange={handleChange}
             />
-
             <button className="bookingButton" type="submit">
-              Lookup
+              <span>Look Up</span>
             </button>
           </form>
 
           <span className="disclaimer">
-            * expired bookings will automatically be deleted
+            * Expired bookings are automatically removed from our system
           </span>
 
-          {error && <span style={{ color: "red" }}>{error}</span>}
+          {error && <span className="bookingError">{error}</span>}
         </div>
 
+        {/* ── Book a room header ── */}
         <div className="bookingHeader">
-          <h1>BOOK A ROOM</h1>
+          <span className="bookingHeader__eyebrow">Availability</span>
+          <h1>Book a Room</h1>
+          <div className="bookingHeader__rule" />
         </div>
 
+        {/* ── Search bar ── */}
         <div className="bookingSearch">
           <HeadingSearch />
         </div>
 
+        {/* ── Room availability list ── */}
         <div className="availability">
           {loading ? (
             <Loading />
           ) : (
-            <>
-              {data?.rooms?.map((room) => (
-                <Availability room={room} key={room._id} />
-              ))}
-            </>
+            data?.rooms?.map((room) => (
+              <Availability room={room} key={room._id} />
+            ))
           )}
         </div>
+
       </div>
 
       <Testimonials />

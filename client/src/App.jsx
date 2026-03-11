@@ -6,9 +6,10 @@ import { Contact, Home, Facilities, Rooms, SingleRoom, Booking, Checkout, Existi
 
 const App = () => {
   const location = useLocation();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location]);
+    document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname]);
 
   return (
     <div className='app'>
@@ -19,10 +20,10 @@ const App = () => {
                <Route path='/rooms/:id' element={ <SingleRoom />} />
                <Route path='/contact' element={ <Contact /> }/>
                <Route path='*' element={ <NoPage /> }/>
-               <Route path='booking' element={ <Booking /> }/>
-               <Route path='booking/existing' element={ <Existing /> }/>
-               <Route path='booking/checkout' element={ <Checkout /> }/>
-               <Route path='booking/confirmation' element={ <Confirmation /> }/>
+               <Route path='/booking' element={ <Booking /> }/>
+               <Route path='/booking/existing' element={ <Existing /> }/>
+               <Route path='/booking/checkout' element={ <Checkout /> }/>
+               <Route path='/booking/confirmation' element={ <Confirmation /> }/>
            </Routes>
     </div>
   )

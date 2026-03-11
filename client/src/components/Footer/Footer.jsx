@@ -9,17 +9,23 @@ import './Footer.css';
 const Footer = () => {
   return (
     <div className="footer">
+
+      {/* ── Main Grid ── */}
       <div className="footerContainer">
-        {/* ADDRESS SECTION */}
+
+        {/* Column 1 — Address */}
         <div className="address">
-          <div className="addressHotel">
-            <h1>K.A</h1>
-            <p>HOTEL & SUITES</p>
+          <div>
+            <span className="footer__colLabel">Our Location</span>
+            <div className="addressHotel">
+              <h1>K.A</h1>
+              <p>Hotel &amp; Suites</p>
+            </div>
           </div>
 
           <div className="addressPlace">
             <p className="addressPlaceInfo">
-              <HiLocationMarker className="svg" />
+              <HiLocationMarker />
               50, Ige Daramola Street, Iyana Iyesi, Ota, Ogun State
             </p>
 
@@ -38,27 +44,52 @@ const Footer = () => {
             </div>
 
             <p className="addressPlaceInfo">
-              <AiFillMail /> info@kuregbeanimashaun.com
+              <AiFillMail />
+              info@kuregbeanimashaun.com
             </p>
           </div>
         </div>
 
-        {/* LINKS */}
-        <ul className="flinks">
-          <Link to="/facilities"><li>Facilities</li></Link>
-          <Link to="/contact"><li>Contact us</li></Link>
-          <Link to="/rooms"><li>Rooms</li></Link>
-        </ul>
+        {/* Column 2 — Nav Links */}
+        <div>
+          <span className="footer__colLabel">Quick Links</span>
+          <ul className="flinks">
+            <Link to="/"><li>Home</li></Link>
+            <Link to="/rooms"><li>Rooms</li></Link>
+            <Link to="/facilities"><li>Facilities</li></Link>
+            <Link to="/contact"><li>Contact Us</li></Link>
+          </ul>
+        </div>
 
-        {/* NEWSLETTER */}
+        {/* Column 3 — Newsletter */}
         <div className="newsletter">
-          <p>Subscribe to our newsletter</p>
+          <span className="footer__colLabel">Stay Connected</span>
+          <p>
+            Subscribe to receive exclusive offers, updates, and hospitality
+            insights from K.A. Hotel and Suites.
+          </p>
           <div className="newsletterInput">
-            <input type="email" placeholder="Email address" />
-            <button className="btn">OK</button>
+            <input type="email" placeholder="Your email address" />
+            <button className="btn">
+              <span>Subscribe</span>
+            </button>
           </div>
         </div>
+
       </div>
+
+      {/* ── Bottom Bar ── */}
+      <div className="footer__bottom">
+        <p className="footer__copy">
+          © {new Date().getFullYear()} K.A. Hotel &amp; Suites. All rights reserved.
+        </p>
+        <div className="footer__socials">
+          <a className="footer__socialLink" href="#instagram">Instagram</a>
+          <a className="footer__socialLink" href="#facebook">Facebook</a>
+          <a className="footer__socialLink" href="#twitter">Twitter</a>
+        </div>
+      </div>
+
     </div>
   );
 };

@@ -1,70 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+/* ================================
+   WRAPPER
+================================= */
 .nopage {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 10rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 2rem;
 }
 
 .nopageContainer {
-    width: 100%;
-    max-width: 1380px;
-    display: flex;
-    justify-content: center;
+  width: 100%;
+  max-width: 680px;
+  min-height: 52vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2rem;
+  padding: 6rem 0;
 }
 
+/* ================================
+   404 NUMBER
+================================= */
+.nopage__code {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 140px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  color: var(--primary-color, #1a1a18);
+  opacity: 0.08;
+  user-select: none;
+  margin-bottom: -2rem;
+}
+
+/* ================================
+   GOLD RULE
+================================= */
+.nopage__rule {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+}
+
+/* ================================
+   HEADING
+================================= */
 .nopageContainer h2 {
-    font-size: 32px;
-    color: var(--primary-color);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 38px;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  color: var(--primary-color, #1a1a18);
 }
 
+/* ================================
+   SUBTEXT
+================================= */
+.nopageContainer p {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  color: #888880;
+  line-height: 1.7;
+  max-width: 400px;
+}
+
+/* ================================
+   BACK BUTTON
+================================= */
+.nopage__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  border: 1px solid var(--primary-color, #1a1a18);
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  padding: 0.85em 2em;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+  margin-top: 0.5rem;
+}
+
+.nopage__back::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-color, #1a1a18);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.nopage__back span {
+  position: relative;
+  z-index: 1;
+}
+
+.nopage__back:hover::before {
+  transform: translateX(0);
+}
+
+.nopage__back:hover {
+  color: var(--white-color, #fff);
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
 @media screen and (min-width: 2000px) {
-    .nopage {
-        margin-top: 20rem;
-    }
-
-    .nopageContainer {
-        max-width: 1980px;
-    }
-
-    .nopageContainer h2 {
-        font-size: 48px;
-    }
+  .nopage__code { font-size: 220px; }
+  .nopageContainer h2 { font-size: 58px; }
+  .nopageContainer p { font-size: 20px; }
+  .nopage__back { font-size: 16px; }
 }
 
-
-@media screen and (max-width:1550px) {
-    .nopageContainer {
-        max-width: 1024px;
-    }
-
-    .nopageContainer h2 {
-        font-size: 28px;
-    }
+@media screen and (max-width: 768px) {
+  .nopage__code { font-size: 100px; }
+  .nopageContainer h2 { font-size: 30px; }
 }
 
-@media screen and (max-width:1150px) {
-    .nopageContainer {
-        max-width: 850px;
-    }
-
-    .nopageContainer h2 {
-        font-size: 26px;
-    }
+@media screen and (max-width: 550px) {
+  .nopage__code { font-size: 80px; }
+  .nopageContainer h2 { font-size: 24px; }
+  .nopageContainer p { font-size: 13px; }
+  .nopageContainer { padding: 4rem 0; }
 }
 
-@media screen and (max-width:850px){
-    .nopageContainer {
-        max-width: 90%;
-    }
-}
-
-@media screen and (max-width:550px) {
-    .nopage {
-        margin-top: 5rem;
-    }
-
-    .nopageContainer h2 {
-        font-size: 22px;
-        text-align: center;
-    }
+@media screen and (max-width: 385px) {
+  .nopageContainer h2 { font-size: 20px; }
 }

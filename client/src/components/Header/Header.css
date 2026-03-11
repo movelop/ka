@@ -1,107 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+/* =============================
+   HEADER BASE
+============================= */
 .header {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 3rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 5rem 2rem 3rem;
+  position: relative;
 }
 
+/* Vertical gold line above heading */
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--gold-color, #b8913f));
+}
+
+/* =============================
+   CONTAINER
+============================= */
 .headerContainer {
-    width: 100%;
-    max-width: 1380px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 3rem;
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
+/* =============================
+   EYEBROW LABEL (optional slot via CSS) 
+============================= */
 .headerContainer h3 {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 32px;
-    text-align: center;
-    letter-spacing: 0.05em;
-    color: var(--primary-color);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 46px;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  color: var(--primary-color, #1a1a18);
+  margin-bottom: 0.25em;
+}
+
+/* Gold rule under heading */
+.headerContainer h3::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+  margin: 1rem auto 0;
 }
 
 .headerContainer p {
-    margin-top: 1.5rem;
-    font-weight: 400;
-    font-size: 18px;
-    text-align: center;
-    color: var(--primary-color);
+  margin-top: 1.5rem;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #555550;
+  max-width: 560px;
 }
 
+/* =============================
+   RESPONSIVE
+============================= */
 @media screen and (min-width: 2000px) {
-    .headerContainer {
-        max-width: 1980px;
-    }
-
-    .headerContainer h3 {
-        font-size: 58px;
-    }
-
-    .headerContainer p {
-        font-size: 28px;
-    }
+  .headerContainer { max-width: 1100px; }
+  .headerContainer h3 { font-size: 72px; }
+  .headerContainer p  { font-size: 22px; max-width: 860px; }
 }
 
-@media screen and (max-width:1550px) {
-    .headerContainer {
-        max-width: 1000px;
-    }
-
-    .headerContainer h3 {
-        font-size: 28px;
-    }
-
-    .headerContainer p {
-        font-size: 17px;
-    }
+@media screen and (max-width: 1024px) {
+  .headerContainer h3 { font-size: 38px; }
+  .headerContainer p  { font-size: 15px; }
 }
 
-@media screen and (max-width:1150px) {
-    .headerContainer {
-        max-width: 850px;
-        margin: 0 5rem;
-    }
-
-    .headerContainer h3 {
-        font-size: 26px;
-    }
-
-    .headerContainer p {
-        font-size: 16px;
-    }
-}
-
-@media screen and (max-width:850px) {
-    .headerContainer {
-        max-width: 100%;
-        margin: 0 2rem;
-    }
+@media screen and (max-width: 768px) {
+  .header { padding: 4rem 1.5rem 2.5rem; }
+  .headerContainer h3 { font-size: 32px; }
 }
 
 @media screen and (max-width: 550px) {
-    .headerContainer{
-        margin: 0;
-        padding: 0 1rem;
-    }
-    .headerContainer h3 {
-        font-size: 22px;
-    }
-
-    .headerContainer p {
-        font-size: 12px;
-        margin-top: 0.5rem;
-    }
+  .header { padding: 3.5rem 1.25rem 2rem; }
+  .headerContainer h3 { font-size: 26px; }
+  .headerContainer p  { font-size: 13px; margin-top: 1rem; }
 }
 
-@media screen and (max-width:385px) {
-    .headerContainer h3 {
-        font-size: 24px;
-    }
-
-    .headerContainer p {
-        font-size: 12px;
-    }
+@media screen and (max-width: 385px) {
+  .headerContainer h3 { font-size: 22px; }
+  .headerContainer p  { font-size: 12px; }
 }

@@ -3,72 +3,92 @@ import { Link } from 'react-router-dom';
 
 import { Heading, Testimonials, Footer } from '../../components';
 import { images } from '../../Data/dummy';
-import './Home.css'
+import './Home.css';
 
 const Home = () => {
   useEffect(() => {
-      document.title = "K.A HOTEL AND SUITES";
-    }, []);
+    document.title = "K.A HOTEL AND SUITES";
+  }, []);
+
   return (
     <div className='home'>
-        <Heading img = {images.homeImage} />
-        <div className="complementry">
-          <h2>At K.A. Hotel and Suites, we pride ourselves on providing a luxurious and seamless stay. Guests enjoy uninterrupted electricity, 
-            ensuring all comforts and devices remain powered at all times. Our expansive parking facilities guarantee ample space for your vehicles, 
-            while our highly trained security personnel, supported by state-of-the-art CCTV surveillance, ensure your safety and peace of mind around 
-            the clock. Every aspect of our service is designed to offer convenience, comfort, and total reassurance during your stay.
+      <Heading img={images.homeImage} />
+
+      {/* ── Tagline ── */}
+      <div className="complementry">
+        <div className="complementry__inner">
+          <span className="complementry__label">Our Promise</span>
+          <h2>
+            At K.A. Hotel and Suites, we pride ourselves on providing a luxurious
+            and seamless stay. Guests enjoy uninterrupted electricity, expansive
+            parking, and state-of-the-art CCTV surveillance — every detail
+            designed for your comfort and total peace of mind.
           </h2>
         </div>
-        <div>
-          <div className="explore">
-            <div className="exploreContainer">
-              <div className="exploreTextContainer">
-                <div className="exploreTexts">
-                  <h3>Luxury redefined</h3>
-                  <p>The rooms at K.A. Hotel and Suites are generously spacious and thoughtfully designed for comfort and convenience. Each room features 
-                    luxurious beds, ample wardrobe space, flat-screen televisions with cable channels, and complimentary high-speed Wi-Fi. Guests enjoy 
-                    en-suite bathrooms equipped with stand-in showers, premium toiletries, and modern fixtures. Additional amenities include telephones, 
-                    luggage storage, and functional tables, ensuring a seamless and enjoyable stay for both business and leisure travelers.
-                  </p>
-                  <Link to="/rooms">
-                    <button className='exploreButton'>Explore our rooms</button>
-                  </Link>
-                </div>
-                <div className='line' />
-              </div>
-              <div className="exploreImageContainer">
-                <img src={images.exploreRooms} alt="exploreRooms" />
+      </div>
+
+      {/* ── Explore Sections ── */}
+      <div>
+
+        {/* Section 1 — Rooms */}
+        <div className="explore">
+          <div className="exploreContainer">
+            <div className="exploreTextContainer">
+              <div className="exploreTexts">
+                <span className="exploreTexts__eyebrow">Accommodations</span>
+                <h3>Luxury <em>redefined</em></h3>
+                <p>
+                  Our rooms are generously spacious and thoughtfully designed for
+                  comfort. Each features luxurious beds, flat-screen TVs with cable,
+                  complimentary high-speed Wi-Fi, en-suite bathrooms with stand-in
+                  showers, premium toiletries, and modern fixtures — a seamless stay
+                  for business and leisure alike.
+                </p>
+                <Link to="/rooms">
+                  <button className='exploreButton'>
+                    <span>Explore our rooms</span>
+                  </button>
+                </Link>
               </div>
             </div>
-          </div>
-          <div className="explore">
-            <div className="exploreContainer">
-              <div className="exploreTextContainer">
-                <div className="exploreTexts">
-                  <h3>Leave your worries at the gate</h3>
-                  <p>K.A. Hotel and Suites features an elegant restaurant and a well-stocked bar, offering guests a variety of local and continental dishes, 
-                    as well as a selection of alcoholic and non-alcoholic beverages to enjoy in a comfortable lounge setting. The hotel is conveniently located 
-                    just a 5-minute drive from Living Faith Church Worldwide (Winners Chapel).
-                    For a smooth check-in experience, guests are requested to contact the hotel in advance using the details provided in their booking 
-                    confirmation. Front desk staff will personally welcome you upon arrival. Guests planning to arrive after 10 PM are especially advised 
-                    to notify the hotel beforehand to ensure timely check-in arrangements.
-                  </p>
-                  <Link to="/facilities">
-                    <button className='exploreButton'>Explore our facilities</button>
-                  </Link>
-                </div>
-                <div className='line'  />
-              </div>
-              <div className="exploreImageContainer">
-                <img src={images.explore2} alt="exploreRooms" />
-              </div>
+            <div className="exploreImageContainer">
+              <img src={images.exploreRooms} alt="Luxury hotel room" />
             </div>
           </div>
         </div>
-        <Testimonials />
-        <Footer />
-    </div>
-  )
-}
 
-export default Home
+        {/* Section 2 — Facilities */}
+        <div className="explore">
+          <div className="exploreContainer">
+            <div className="exploreTextContainer">
+              <div className="exploreTexts">
+                <span className="exploreTexts__eyebrow">Facilities</span>
+                <h3>Leave your worries <em>at the gate</em></h3>
+                <p>
+                  Enjoy our elegant restaurant and well-stocked bar, offering local
+                  and continental dishes alongside a curated selection of beverages.
+                  Conveniently located just a 5-minute drive from Winners Chapel,
+                  with dedicated front desk staff ready to welcome you — day or night.
+                </p>
+                <Link to="/facilities">
+                  <button className='exploreButton'>
+                    <span>Explore our facilities</span>
+                  </button>
+                </Link>
+              </div>
+            </div>
+            <div className="exploreImageContainer">
+              <img src={images.explore2} alt="Hotel facilities" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <Testimonials />
+      <Footer />
+    </div>
+  );
+};
+
+export default Home;

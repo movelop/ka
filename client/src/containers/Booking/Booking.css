@@ -1,155 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
 /* ================================
-   BOOKING SECTION
+   PAGE WRAPPER
 ================================= */
 .booking {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0 2rem;
+  margin-bottom: 6rem;
 }
 
-.bookingHeader {
-    margin-top: 4rem;
-    text-align: center;
-}
-
-.bookingHeader h1 {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 38px;
-    color: var(--primary-color);
-}
-
-.bookingSearch {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-    position: relative;
-}
-
+/* ================================
+   CHECK RESERVATION BANNER
+================================= */
 .checkReservation {
-    width: 100%;
-    max-width: 1380px;
-    margin-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+  width: 100%;
+  max-width: 860px;
+  margin-top: 4rem;
+  padding: 2.5rem 3rem;
+  background: #faf7f2;
+  border: 1px solid rgba(184, 145, 63, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  position: relative;
+}
+
+/* Gold top accent */
+.checkReservation::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+}
+
+.checkReservation__eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
 }
 
 .checkReservation h1 {
-    font-size: 24px;
-    color: var(--primary-color);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 30px;
+  color: var(--primary-color, #1a1a18);
+  letter-spacing: 0.02em;
+  text-align: center;
 }
 
+/* ── Form ── */
 .checkReservationForm {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
 }
 
 .checkReservationForm input {
-    width: 300px;
-    padding: 10px;
-    border: 1px solid var(--gold-color);
-    font-size: 16px;
-    outline: none;
-    transition: border 0.2s ease;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+  padding: 12px 0;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--primary-color, #1a1a18);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(26, 26, 24, 0.2);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.checkReservationForm input::placeholder {
+  color: rgba(26, 26, 24, 0.35);
+  font-size: 12px;
+  letter-spacing: 0.03em;
 }
 
 .checkReservationForm input:focus {
-    border: 2px solid var(--gold-color);
+  border-bottom-color: var(--gold-color, #b8913f);
 }
 
+/* Lookup button */
 .bookingButton {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    background-color: var(--primary-color);
-    color: var(--white-color);
-    border: none;
-    padding: 10px 15px;
-    width: 100px;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--primary-color, #1a1a18);
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  padding: 0.85em 2em;
+  min-width: 100px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+  align-self: flex-end;
+  margin-bottom: 1px; /* align with input baseline */
+}
+
+.bookingButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-color, #1a1a18);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.bookingButton span {
+  position: relative;
+  z-index: 1;
+}
+
+.bookingButton:hover::before {
+  transform: translateX(0);
 }
 
 .bookingButton:hover {
-    background-color: #1f3e88;
+  color: var(--white-color, #fff);
 }
 
 .disclaimer {
-    font-size: 16px;
-    color: #6278a0;
-    text-align: center;
-    margin-top: 1rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #aaa;
+  letter-spacing: 0.05em;
+  text-align: center;
 }
 
-.availability {
-    width: 100%;
-    max-width: 1024px;
-    margin-top: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    color: var(--primary-color);
+.bookingError {
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  color: #b94a48;
+  letter-spacing: 0.03em;
 }
 
 /* ================================
-   RESPONSIVE STYLES
+   BOOK A ROOM HEADER
 ================================= */
+.bookingHeader {
+  margin-top: 5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-/* Ultra Large screens */
+.bookingHeader__eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
+}
+
+.bookingHeader h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 52px;
+  letter-spacing: 0.04em;
+  color: var(--primary-color, #1a1a18);
+  line-height: 1;
+}
+
+.bookingHeader__rule {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-color, #b8913f), transparent);
+  margin-top: 0.5rem;
+}
+
+/* ================================
+   SEARCH BAR
+================================= */
+.bookingSearch {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+  position: relative;
+  z-index: 100;
+}
+
+/* ================================
+   AVAILABILITY LIST
+================================= */
+.availability {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: var(--primary-color, #1a1a18);
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
 @media screen and (min-width: 2000px) {
-    .checkReservation { max-width: 1980px; margin-top: 4rem; gap: 20px; }
-    .checkReservation h1 { font-size: 32px; }
-    .checkReservationForm { gap: 20px; }
-    .checkReservationForm input { width: 550px; font-size: 24px; padding: 20px; border-width: 2px; }
-    .bookingButton { font-size: 24px; padding: 10px 20px; width: 150px; }
-    .disclaimer { font-size: 24px; }
-    .availability { max-width: 1580px; margin-top: 2.5rem; }
+  .checkReservation { max-width: 1300px; padding: 3.5rem 5rem; }
+  .checkReservation h1 { font-size: 44px; }
+  .checkReservationForm input { font-size: 18px; max-width: 420px; }
+  .bookingButton { font-size: 16px; }
+  .disclaimer { font-size: 16px; }
+  .bookingHeader h1 { font-size: 80px; }
+  .availability { max-width: 1400px; }
 }
 
-/* Medium screens */
-@media screen and (max-width: 1550px) {
-    .checkReservation { max-width: 1024px; }
-    .checkReservation h1 { font-size: 20px; }
-    .checkReservationForm input { padding: 8px; font-size: 14px; }
-    .bookingButton { font-size: 14px; }
-    .disclaimer { font-size: 14px; }
-    .availability { max-width: 900px; }
+@media screen and (max-width: 1024px) {
+  .checkReservation { max-width: 700px; padding: 2rem; }
+  .bookingHeader h1 { font-size: 42px; }
 }
 
-/* Small screens */
-@media screen and (max-width: 1150px) {
-    .checkReservation { max-width: 850px; }
-    .checkReservation h1 { font-size: 18px; }
-    .checkReservationForm { gap: 7px; }
-    .bookingButton { font-size: 13px; width: 80px; }
-    .availability { max-width: 780px; }
+@media screen and (max-width: 768px) {
+  .checkReservation { max-width: 100%; }
+  .checkReservationForm input { max-width: 100%; min-width: 160px; }
+  .bookingHeader h1 { font-size: 36px; }
 }
 
-/* Medium Mobile */
-@media screen and (max-width: 850px) {
-    .checkReservation { width: 90%; }
-    .checkReservationForm { gap: 5px; }
-    .bookingButton { width: 70px; }
-    .availability { max-width: 90vw; }
-}
-
-/* Small Mobile */
 @media screen and (max-width: 550px) {
-    .checkReservation h1 { font-size: 16px; }
-    .checkReservationForm { flex-direction: column; width: 100%; gap: 10px; }
-    .checkReservationForm input { width: 86%; margin-right: 0; }
-    .bookingButton { width: 90%; flex-basis: 100%; }
-    .disclaimer { font-size: 12px; }
+  .booking { padding: 0 1rem; }
+  .checkReservation { padding: 2rem 1.25rem; gap: 1rem; }
+  .checkReservation h1 { font-size: 22px; }
+  .checkReservationForm {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .checkReservationForm input { max-width: 100%; }
+  .bookingButton { width: 100%; align-self: stretch; padding: 1em; }
+  .bookingHeader h1 { font-size: 28px; }
+  .disclaimer { font-size: 11px; }
 }
 
-/* Extra Small Mobile */
 @media screen and (max-width: 385px) {
-    .checkReservation h1 { font-size: 14px; }
-    .disclaimer { font-size: 11px; }
+  .checkReservation h1 { font-size: 19px; }
+  .bookingHeader h1 { font-size: 24px; }
 }

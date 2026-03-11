@@ -7,43 +7,50 @@ import './Facilities.css';
 
 const desc = "At K.A. Hotel & Suites, we strive to make your stay truly unforgettable. Every detail is designed with your comfort in mind, ensuring a uniquely personalized experience. Our hotel offers a serene setting with stunning views, ideal for relaxation and leisure, while our modern luxury facilities provide everything you need to enjoy the very best of hospitality.";
 
+/* ── Facility Card ── */
 const Facility = ({ item }) => (
-  <div className="facility"
+  <div
+    className="facility"
     style={{
-      background: ` no-repeat center/cover url(${item.image}) `,
+      background: `no-repeat center/cover url(${item.image})`,
     }}
   >
-    <div className='overlay'/>
+    <div className="overlay" />
     <div className="facilityName">
       <h4>{item.title}</h4>
     </div>
   </div>
-)
+);
+
+/* ── Page ── */
 const Facilities = () => {
   const { data, loading } = useFetch('/facilities');
-  
-    useEffect(() => {
-    document.title = "K.A HOTEL AND SUITES||FACILITIES";
+
+  useEffect(() => {
+    document.title = "K.A Hotel & Suites — Facilities";
   }, []);
+
   return (
     <div>
-        <Heading img = {images.facilitiesImg}  />
-        <Header name= 'FACILITIES' desc={ desc } />
-        <div className="facilities">
-            <div className="facilitiesContainer">
-                {loading ? (<Loading text={'Loading ...'} />) : (
-              <>
-                {data?.facilities?.map((item) => (
-                  <Facility key={item._id} item={item} />
-                ))}
-              </>
-            )}
-            </div>
+      <Heading img={images.facilitiesImg} />
+      <Header name="Facilities" desc={desc} />
+
+      <div className="facilities">
+        <div className="facilitiesContainer">
+          {loading ? (
+            <Loading text="Loading facilities…" />
+          ) : (
+            data?.facilities?.map((item) => (
+              <Facility key={item._id} item={item} />
+            ))
+          )}
         </div>
-        <Testimonials />
-        <Footer />
+      </div>
+
+      <Testimonials />
+      <Footer />
     </div>
-  )
-}
+  );
+};
 
 export default Facilities;

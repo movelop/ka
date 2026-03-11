@@ -1,16 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
 /* ================================
-   CHECKOUT PAGE
+   PAGE WRAPPER
 ================================= */
 .checkout {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-top: 3rem;
+    padding: 0 2rem;
+    margin-top: 4rem;
+    margin-bottom: 6rem;
 }
 
 .checkoutContainer {
     width: 100%;
-    max-width: 1380px;
+    max-width: 1280px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -18,73 +22,130 @@
 }
 
 .checkoutContainer > h1 {
-    font-size: 28px;
-    color: var(--primary-color);
-    margin-bottom: 2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 46px;
+    letter-spacing: 0.04em;
+    color: var(--primary-color, #1a1a18);
     text-align: center;
 }
 
+/* ================================
+   BOOKING SUMMARY CARD
+================================= */
 .checkoutRoomInfo {
-    background-color: #c3d6f8;
     width: 100%;
-    max-width: 1024px;
-    padding: 1rem;
+    max-width: 680px;
+    background: #faf7f2;
+    border: 1px solid rgba(184, 145, 63, 0.2);
+    padding: 2rem 2.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    gap: 1rem;
+    gap: 0;
+    position: relative;
+}
+
+.checkoutRoomInfo::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--gold-color, #b8913f), transparent);
 }
 
 .checkoutRoomInfo > h1 {
-    font-size: 18px;
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-color, #b8913f);
+    margin-bottom: 1.25rem;
 }
 
 .checkoutRoomInfo > div {
     display: flex;
     justify-content: space-between;
-    width: 40%;
-    padding: 1rem 0;
+    align-items: baseline;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgba(26, 26, 24, 0.06);
+    gap: 1rem;
+    width: 100%;
+}
+
+.checkoutRoomInfo > div:last-of-type {
+    border-bottom: none;
+}
+
+.checkoutRoomInfo > div > h4 {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 24, 0.45);
+    flex-shrink: 0;
 }
 
 .checkoutRoomInfo > div > span {
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--primary-color, #1a1a18);
     display: flex;
     align-items: center;
+    text-align: right;
 }
 
+/* Total row bold */
+.checkoutRoomInfo > div > span[style] {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* Alert */
 .alert {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    font-size: 14px;
-    color: #af2d2d;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(175, 45, 45, 0.06);
+    border-left: 2px solid #b94a48;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: #b94a48;
+    line-height: 1.6;
+    border-bottom: none !important;
 }
 
 /* ================================
-   GUEST DETAILS
+   GUEST DETAILS FORM
 ================================= */
 .guestDetails {
-    margin: 3rem auto;
-    max-width: 1024px;
+    width: 100%;
+    max-width: 680px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .guestDetails > h1 {
-    font-size: 18px;
-    color: var(--primary-color);
-    text-transform: uppercase;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 32px;
+    letter-spacing: 0.03em;
+    color: var(--primary-color, #1a1a18);
 }
 
 .errorMsg {
-    display: inline-block;
-    text-align: center;
-    width: 100%;
-    color: crimson;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    color: #b94a48;
+    letter-spacing: 0.03em;
+    padding: 0.5rem 0.75rem;
+    background: rgba(175, 45, 45, 0.06);
+    border-left: 2px solid #b94a48;
+    display: block;
 }
 
 .guestDetails > form {
@@ -92,176 +153,212 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    padding: 0 3rem;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .guestFormInput {
-    width: 45%;
+    width: 47%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    color: var(--primary-color);
+    gap: 6px;
 }
 
 .guestFormInput > label {
-    font-size: 16px;
-    font-weight: 700;
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-color, #b8913f);
 }
 
-.guestFormInput > input {
-    border: 1px solid var(--primary-color);
-    font-size: 16px;
-    padding: 8px;
-    border-radius: 4px;
-}
-
-.guestFormInput > input:focus {
-    border: 2px solid var(--primary-color);
+.guestDetailsInput {
+    border: none;
+    border-bottom: 1px solid rgba(26, 26, 24, 0.2);
+    padding: 10px 0;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--primary-color, #1a1a18);
+    background: transparent;
     outline: none;
+    transition: border-color 0.3s ease;
+    width: 100%;
 }
 
-.guestFormInput > .checkbox {
-    width: 25px;
-    height: 25px;
+.guestDetailsInput::placeholder {
+    color: rgba(26, 26, 24, 0.3);
+    font-size: 12px;
 }
 
+.guestDetailsInput:focus {
+    border-bottom-color: var(--gold-color, #b8913f);
+}
+
+/* ================================
+   ROOM NUMBER SELECTION
+================================= */
 .selectRoomContainer {
-    width: 45%;
+    width: 47%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.75rem;
 }
 
 .selectRoomContainer > label {
-    font-size: 16px;
-    font-weight: 700;
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-color, #b8913f);
 }
 
 .selectRoom {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 0.6rem;
 }
 
 .optionsBoxes {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 5px;
+    background: #faf7f2;
+    border: 1px solid rgba(184, 145, 63, 0.25);
+    padding: 0.5rem 0.85rem;
+    min-width: 52px;
+    transition: border-color 0.25s ease, background 0.25s ease;
+    cursor: pointer;
 }
 
-.optionsBoxes > .checkbox {
-    width: 25px;
-    height: 25px;
-    border-color: var(--primary-color);
+.optionsBoxes:has(.checkbox:checked) {
+    border-color: var(--gold-color, #b8913f);
+    background: rgba(184, 145, 63, 0.08);
 }
 
 .optionsBoxes > label {
-    font-size: 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
     font-weight: 500;
+    color: var(--primary-color, #1a1a18);
+    letter-spacing: 0.05em;
+    cursor: pointer;
 }
 
+.optionsBoxes > .checkbox {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--gold-color, #b8913f);
+    cursor: pointer;
+}
+
+.optionsBoxes > .checkbox:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ================================
+   BUTTONS
+================================= */
 .guestFormButton {
     width: 100%;
     display: flex;
     justify-content: flex-end;
-    margin-top: 1.5rem;
+    margin-top: 0.5rem;
 }
 
-.guestFormButton > button {
-    width: 200px;
-    padding: 10px;
-    font-size: 16px;
-    background-color: var(--gold-color);
-    border: none;
-    outline: none;
-    color: var(--white-color);
-    border-radius: 4px;
+.continue {
+    background: transparent;
+    border: 1px solid var(--primary-color, #1a1a18);
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--primary-color, #1a1a18);
+    padding: 0.9em 2.5em;
     cursor: pointer;
-    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.35s ease;
 }
 
-.guestFormButton > button:hover {
-    opacity: 0.9;
+.continue::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--primary-color, #1a1a18);
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-.guestFormButton > .continue {
-    background-color: var(--primary-color);
+.continue:hover::before {
+    transform: translateX(0);
+}
+
+.continue:hover {
+    color: var(--white-color, #fff);
+}
+
+.pay {
+    background: var(--gold-color, #b8913f);
+    border: 1px solid var(--gold-color, #b8913f);
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white-color, #fff);
+    padding: 0.9em 2.5em;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+}
+
+.pay:hover {
+    opacity: 0.85;
 }
 
 /* ================================
    RESPONSIVE
 ================================= */
-
-/* Extra large screens */
 @media screen and (min-width: 2000px) {
-    .checkoutContainer > h1 { font-size: 38px; }
-    .checkoutRoomInfo { max-width: 1580px; gap: 1.5rem; }
-    .checkoutRoomInfo > h1 { font-size: 28px; }
-    .checkoutRoomInfo > div { width: 50%; padding: 2rem 0; }
-    .checkoutRoomInfo > div > h4 { font-size: 28px; }
-    .checkoutRoomInfo > div > span { font-size: 26px; }
-    .alert { font-size: 24px; }
-    .guestDetails { max-width: 1580px; }
-    .guestDetails > h1 { font-size: 28px; }
-    .guestFormInput > label,
-    .optionsBoxes > label,
-    .selectRoomContainer > label { font-size: 26px; }
-    .guestFormInput > input { font-size: 24px; padding: 12px; }
-    .optionsBoxes > .checkbox { width: 45px; height: 45px; }
-    .guestFormButton > button { font-size: 28px; width: 300px; padding: 15px; }
-}
-
-/* Large screens */
-@media screen and (max-width: 1550px) {
-    .checkoutContainer { max-width: 1024px; }
-    .checkoutContainer > h1 { font-size: 24px; }
-    .checkoutRoomInfo { max-width: 900px; }
-    .checkoutRoomInfo > h1 { font-size: 16px; }
-    .checkoutRoomInfo > div > h4,
-    .checkoutRoomInfo > div > span { font-size: 15px; }
-    .guestDetails { max-width: 900px; }
-    .guestDetails h1 { font-size: 16px; }
-    .guestFormInput > label,
-    .optionsBoxes > label { font-size: 15px; }
-    .guestFormInput > input { font-size: 15px; }
-    .guestFormButton > button { width: 150px; }
-}
-
-/* Medium screens */
-@media screen and (max-width: 1150px) {
-    .checkoutContainer { max-width: 850px; }
-    .checkoutContainer > h1 { font-size: 22px; }
-    .checkoutRoomInfo { max-width: 780px; }
-    .alert { font-size: 14px; margin-top: 5px; }
-    .optionsBoxes > .checkbox { width: 20px; height: 20px; }
-}
-
-/* Small screens */
-@media screen and (max-width: 850px) {
-    .checkoutContainer { max-width: 90%; }
-    .checkoutRoomInfo { max-width: 90%; }
-    .checkoutRoomInfo > div { width: 60%; }
-    .guestDetails { max-width: 90%; }
-}
-
-/* Extra small screens */
-@media screen and (max-width: 550px) {
-    .checkoutRoomInfo > div { width: 95%; }
+    .checkoutContainer > h1 { font-size: 64px; }
+    .checkoutRoomInfo { max-width: 960px; padding: 3rem 4rem; }
     .checkoutRoomInfo > h1 { font-size: 14px; }
-    .checkoutRoomInfo > div > h4,
-    .checkoutRoomInfo > div > span { font-size: 13px; }
-    .alert { font-size: 12px; }
-    .guestFormInput, .selectRoomContainer { width: 100%; }
-    .guestFormButton > button { font-size: 14px; width: 150px; }
+    .checkoutRoomInfo > div > h4 { font-size: 14px; }
+    .checkoutRoomInfo > div > span { font-size: 18px; }
+    .guestDetails { max-width: 960px; }
+    .guestDetails > h1 { font-size: 48px; }
+    .guestFormInput > label,
+    .selectRoomContainer > label { font-size: 14px; }
+    .guestDetailsInput { font-size: 20px; padding: 14px 0; }
+    .optionsBoxes > label { font-size: 18px; }
+    .continue, .pay { font-size: 16px; padding: 1em 3em; }
 }
 
-/* Tiny screens */
+@media screen and (max-width: 850px) {
+    .guestFormInput,
+    .selectRoomContainer { width: 100%; }
+}
+
+@media screen and (max-width: 550px) {
+    .checkout { padding: 0 1rem; margin-top: 2rem; }
+    .checkoutContainer > h1 { font-size: 30px; }
+    .checkoutRoomInfo { padding: 1.5rem; }
+    .guestDetails > h1 { font-size: 24px; }
+    .continue, .pay { width: 100%; font-size: 11px; }
+    .guestFormButton { justify-content: stretch; }
+}
+
 @media screen and (max-width: 385px) {
-    .checkoutRoomInfo { max-width: 85%; }
-    .checkoutRoomInfo > div { width: 100%; }
-    .checkoutRoomInfo > div > h4,
-    .checkoutRoomInfo > div > span { font-size: 10px; }
-    .guestDetails { max-width: 95%; }
-    .guestFormButton > button { width: 130px; }
+    .checkoutContainer > h1 { font-size: 24px; }
+}
+
+@media print {
+    .small, .testimonials, .footer { display: none; }
+    .checkout { margin-top: 0; padding: 0; }
+    .checkoutRoomInfo { border: none; background: #fff; }
+    .checkoutRoomInfo::before { display: none; }
 }

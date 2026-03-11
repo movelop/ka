@@ -1,98 +1,72 @@
 /* ================================
-   LOADER
+   LOADER WRAPPER
 ================================= */
 .loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 3rem auto;
-    text-align: center;
-    color: var(--primary-color);
-}
-
-.ldsRoller {
-    display: inline-block;
-    position: relative;
-    width: 80px;
-    height: 80px;
-}
-
-.ldsRoller div {
-    transform-origin: 40px 40px;
-    animation: ldsRoller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-}
-
-.ldsRoller div::after {
-    content: '';
-    display: block;
-    position: absolute;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    margin: -4px 0 0 -4px;
-}
-
-/* Positioning each dot and animation delay */
-.ldsRoller div:nth-child(1) { animation-delay: -0.036s; }
-.ldsRoller div:nth-child(1)::after { top: 63px; left: 63px; }
-
-.ldsRoller div:nth-child(2) { animation-delay: -0.072s; }
-.ldsRoller div:nth-child(2)::after { top: 68px; left: 56px; }
-
-.ldsRoller div:nth-child(3) { animation-delay: -0.108s; }
-.ldsRoller div:nth-child(3)::after { top: 71px; left: 48px; }
-
-.ldsRoller div:nth-child(4) { animation-delay: -0.144s; }
-.ldsRoller div:nth-child(4)::after { top: 72px; left: 40px; }
-
-.ldsRoller div:nth-child(5) { animation-delay: -0.18s; }
-.ldsRoller div:nth-child(5)::after { top: 71px; left: 32px; }
-
-.ldsRoller div:nth-child(6) { animation-delay: -0.216s; }
-.ldsRoller div:nth-child(6)::after { top: 68px; left: 24px; }
-
-.ldsRoller div:nth-child(7) { animation-delay: -0.252s; }
-.ldsRoller div:nth-child(7)::after { top: 63px; left: 17px; }
-
-.ldsRoller div:nth-child(8) { animation-delay: -0.288s; }
-.ldsRoller div:nth-child(8)::after { top: 56px; left: 12px; }
-
-/* Animation */
-@keyframes ldsRoller {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Optional Webkit for older browsers */
-@-webkit-keyframes ldsRoller {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 4rem auto;
+  text-align: center;
 }
 
 /* ================================
-   RESPONSIVE ADJUSTMENTS
+   GOLD RING SPINNER
 ================================= */
-@media screen and (max-width: 850px) {
-    .ldsRoller {
-        width: 60px;
-        height: 60px;
-    }
-    .ldsRoller div::after {
-        width: 5px;
-        height: 5px;
-        margin: -2.5px 0 0 -2.5px;
-    }
+.ldsRoller {
+  display: inline-block;
+  position: relative;
+  width: 48px;
+  height: 48px;
 }
 
+.ldsRoller::before,
+.ldsRoller::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+/* Outer faint ring */
+.ldsRoller::before {
+  border: 2px solid rgba(184, 145, 63, 0.15);
+}
+
+/* Spinning arc */
+.ldsRoller::after {
+  border: 2px solid transparent;
+  border-top-color: var(--gold-color, #b8913f);
+  animation: goldSpin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Hide the old dot divs — kept in markup for backward compat */
+.ldsRoller div,
+.ldsRoller div::after {
+  display: none;
+}
+
+@keyframes goldSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================
+   LOADING TEXT
+================================= */
+.loader__text {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 24, 0.4);
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
 @media screen and (max-width: 550px) {
-    .ldsRoller {
-        width: 50px;
-        height: 50px;
-    }
-    .ldsRoller div::after {
-        width: 4px;
-        height: 4px;
-        margin: -2px 0 0 -2px;
-    }
+  .ldsRoller { width: 36px; height: 36px; }
+  .loader__text { font-size: 9px; }
 }

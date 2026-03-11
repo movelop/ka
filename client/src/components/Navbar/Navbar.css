@@ -1,183 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap');
+
 /* =============================
    NAVBAR BASE
 ============================= */
 .navbar {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    height: 80px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    transition: background 0.3s ease;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 72px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  transition: background 0.4s ease, box-shadow 0.4s ease, height 0.3s ease;
+  /* Transparent over hero */
+  background: transparent;
 }
 
-.colorChange {
-    background-color: var(--primary-color);
-}
-
-.navbarContainer {
-    width: 100%;
-    max-width: 1380px;
-    height: 90%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    width: 172px;
-    height: 100%;
-    background-color: var(--gold-color);
-    border-bottom-left-radius: 25%;
-    border-bottom-right-radius: 25%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.logoText {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-}
-
-.logoText h1 {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 24px;
-    letter-spacing: 0.1em;
-    color: var(--primary-color);
-    text-transform: uppercase;
-}
-
-.logoText h3 {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.25em;
-    color: var(--primary-color);
-    text-transform: uppercase;
-}
-
-.links {
-    display: flex;
-    align-items: center;
-    gap: 4rem;
-}
-
-.navLink span {
-    font-weight: 500;
-    font-size: 18px;
-    color: var(--white-color);
-    text-transform: uppercase;
-}
-
-.navbarToggle {
-    display: none;
-    position: relative;
-}
-
-.navbarSmall {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-end;
-    text-align: end;
-    background: var(--gold-color);
-    padding: 2rem;
-    position: absolute;
-    top: 15px;
-    right: 0;
-    margin-top: 1rem;
-    min-width: 210px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 5px rgba(80, 79, 79, 0.2);
-}
-
-.navbarCancel {
-    font-size: 27px;
-    color: var(--primary-color);
-    cursor: pointer;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
-.navbarSmallLinks {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.navLinkSmall span {
-    font-family: var(--font-heading);
-    cursor: pointer;
-    font-weight: 900;
-    font-size: 1rem;
-    color: var(--primary-color);
-    text-align: center;
-    margin: 2rem 0;
+/* Scrolled state */
+.navbar.colorChange {
+  background: rgba(18, 17, 14, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgba(184, 145, 63, 0.25);
+  height: 64px;
 }
 
 /* =============================
-   RESPONSIVE STYLES
+   CONTAINER
 ============================= */
+.navbarContainer {
+  width: 100%;
+  max-width: 1280px;
+  padding: 0 2rem;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-/* Ultra large screens */
+/* =============================
+   LOGO
+============================= */
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo a {
+  text-decoration: none;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  position: relative;
+  padding-left: 14px;
+}
+
+/* Gold left border accent */
+.logoText::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--gold-color, #b8913f);
+}
+
+.logoText h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.12em;
+  color: var(--white-color, #fff);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.logoText h3 {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+}
+
+/* =============================
+   DESKTOP LINKS
+============================= */
+.links {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  list-style: none;
+}
+
+.navLink {
+  position: relative;
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+.navLink span {
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  transition: color 0.25s ease;
+}
+
+.navLink:hover span {
+  color: var(--white-color, #fff);
+}
+
+/* Animated underline */
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold-color, #b8913f);
+  transition: width 0.3s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.navLink:hover::after,
+.navLink[style*="border-bottom"]::after {
+  width: 100%;
+}
+
+/* Override the inline active style from React with CSS */
+.navLink[style*="border-bottom"] {
+  border-bottom: none !important;
+}
+
+.navLink[style*="border-bottom"] span {
+  color: var(--white-color, #fff);
+}
+
+.navLink[style*="border-bottom"]::after {
+  width: 100%;
+  background: var(--gold-color, #b8913f);
+}
+
+/* =============================
+   MOBILE TOGGLE
+============================= */
+.navbarToggle {
+  display: none;
+  position: relative;
+  align-items: center;
+}
+
+.navbarToggle svg {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.navbarToggle svg:hover {
+  opacity: 0.75;
+}
+
+/* =============================
+   MOBILE MENU
+============================= */
+.navbarSmall {
+  display: flex;
+  flex-direction: column;
+  background: rgba(18, 17, 14, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 3rem 2rem 2rem;
+  position: absolute;
+  top: 8px;
+  right: 0;
+  min-width: 220px;
+  border-radius: 4px;
+  border: 1px solid rgba(184, 145, 63, 0.2);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  animation: menuReveal 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes menuReveal {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.navbarCancel {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  transition: color 0.2s ease;
+}
+
+.navbarCancel:hover {
+  color: var(--white-color, #fff);
+}
+
+.navbarSmallLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.navLinkSmall {
+  text-decoration: none;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: padding-left 0.25s ease;
+}
+
+.navLinkSmall:last-child {
+  border-bottom: none;
+}
+
+.navLinkSmall:hover {
+  padding-left: 6px;
+}
+
+.navLinkSmall span {
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.navLinkSmall:hover span,
+.navLinkSmall[style*="border-bottom"] span {
+  color: var(--gold-color, #b8913f);
+}
+
+/* Gold dot for active mobile link */
+.navLinkSmall[style*="border-bottom"] {
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  position: relative;
+}
+
+.navLinkSmall[style*="border-bottom"]::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold-color, #b8913f);
+  margin-right: 10px;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
+
+/* =============================
+   RESPONSIVE
+============================= */
 @media screen and (min-width: 2000px) {
-    .navbar { height: 120px; }
-    .navbarContainer { min-width: 1980px; }
-    .logo { width: 256px; }
-    .logoText h1 { font-size: 38px; }
-    .logoText h3 { font-size: 18px; }
-    .navLink span { font-size: 28px; }
+  .navbar { height: 96px; }
+  .navbar.colorChange { height: 80px; }
+  .navbarContainer { max-width: 1900px; }
+  .logoText h1 { font-size: 38px; }
+  .logoText h3 { font-size: 13px; }
+  .navLink span { font-size: 16px; }
+  .links { gap: 4rem; }
 }
 
-/* Medium screens */
-@media screen and (max-width: 1550px) {
-    .navbar { height: 64px; }
-    .navbarContainer { max-width: 1024px; height: 90%; }
-    .logo { width: 132px; }
-    .logoText h1 { font-size: 20px; }
-    .logoText h3 { font-size: 10px; }
-    .navLink span { font-size: 16px; }
+@media screen and (max-width: 1200px) {
+  .navbar { height: 60px; }
+  .navbarContainer { max-width: 90%; }
+  .logoText h1 { font-size: 22px; }
+  .navLink span { font-size: 11px; }
+  .links { gap: 2rem; }
 }
 
-/* Small screens */
-@media screen and (max-width: 1150px) {
-    .navbar { height: 51px; }
-    .navbarContainer { max-width: 850px; }
-    .logo { width: 100px; }
-    .logoText h1 { font-size: 15px; }
-    .logoText h3 { font-size: 9px; letter-spacing: 0.1em; }
-    .links { display: none; }
-    .navbarToggle { display: flex; }
+@media screen and (max-width: 1024px) {
+  .links { display: none; }
+  .navbarToggle { display: flex; }
 }
 
-/* Mobile screens */
-@media screen and (max-width: 850px) {
-    .navbarContainer { max-width: 90%; }
-    .navbarSmall { top: 25px; }
-}
-
-/* Extra small screens */
 @media screen and (max-width: 550px) {
-    .navbar { height: 48px; }
-    .navbarContainer { max-width: 95%; }
-    .logo { width: 90px; }
-    .logoText h1 { font-size: 14px; }
-    .logoText h3 { font-size: 8px; }
+  .navbar { height: 52px; }
+  .logoText h1 { font-size: 20px; }
+  .logoText h3 { font-size: 8px; }
+  .navbarSmall { min-width: 190px; }
 }
 
-/* Tiny screens */
 @media screen and (max-width: 385px) {
-    .navbarSmall { top: 35px; min-width: 150px; padding: 1rem; }
-    .navbarCancel { font-size: 22px; top: 10px; right: 10px; }
-    .navbarSmallLinks span { font-size: 16px; }
+  .logoText h1 { font-size: 17px; }
+  .navbarSmall { min-width: 160px; padding: 2.5rem 1.5rem 1.5rem; }
 }

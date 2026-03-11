@@ -1,315 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap');
+
+/* =============================
+   SECTION WRAPPER
+============================= */
 .rooms {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
+  padding: 0 2rem 6rem;
 }
 
+/* =============================
+   GRID
+============================= */
 .roomsContainer {
-    width: 100%;
-    max-width: 1380px;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-evenly;
-    margin-top: 3rem;
-    gap: 1rem;
+  width: 100%;
+  max-width: 1280px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
 }
 
+/* =============================
+   ROOM CARD
+============================= */
 .room {
-    margin-bottom: 3rem;
-    width: 45%;
-    border: 2px solid var(--primary-color);
-    border-radius: 5px 5px 15px 15px;
-    overflow: hidden;
-    background: var(--white-color);
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
+  background: var(--white-color, #fff);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.35s ease, transform 0.35s ease;
+  border: 1px solid rgba(26, 26, 24, 0.08);
 }
 
 .room:hover {
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
 }
 
+/* =============================
+   IMAGE
+============================= */
 .roomImageContainer {
-    width: 100%;
-    position: relative;
-    height: 400px;
+  width: 100%;
+  height: 320px;
+  position: relative;
+  overflow: hidden;
+}
+
+.roomImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.room:hover .roomImageContainer img {
+  transform: scale(1.05);
 }
 
 .imageOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: rgba(20, 39, 74, 0.2);
-    transition: background 0.25s ease;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(10, 10, 8, 0.45) 100%
+  );
+  transition: opacity 0.35s ease;
+  z-index: 1;
 }
 
 .imageactive {
-    background: var(--white-color);
+  opacity: 0;
 }
 
+/* =============================
+   ROOM NAME BAR
+============================= */
 .roomName {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.75rem 0;
-    background: var(--primary-color);
+  padding: 1.25rem 1.75rem;
+  background: var(--primary-color, #1a1a18);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+/* Gold left accent */
+.roomName::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold-color, #b8913f);
 }
 
 .roomName h2 {
-    font-weight: 700;
-    font-size: 32px;
-    text-transform: uppercase;
-    color: var(--white-color);
-    letter-spacing: 0.05em;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--white-color, #fff);
 }
 
+/* =============================
+   SUMMARY
+============================= */
 .roomSummary {
-    padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
 }
 
 .roomSummaryText p {
-    font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
-    color: var(--primary-color);
-    text-align: start;
-    line-height: 1.6;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  color: #555550;
+  line-height: 1.8;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
+/* =============================
+   ACTION ROW
+============================= */
 .actionButton {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(26, 26, 24, 0.07);
 }
 
+/* Price */
 .roomPrice {
-    display: flex;
-    align-items: center;
-    gap: 0.1em;
-    font-weight: bolder;
-    font-size: 24px;
-    color: var(--primary-color);
-    letter-spacing: 0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 28px;
+  color: var(--primary-color, #1a1a18);
+  letter-spacing: 0.02em;
 }
 
 .roomPrice span {
-    font-size: 24px;
+  font-size: 28px;
 }
 
+/* Book button */
 .actionButton button {
-    padding: 0.5em 1em;
-    font-size: 18px;
-    border: none;
-    outline: none;
-    background-color: var(--gold-color);
-    color: var(--white-color);
-    border-radius: 0.25em;
-    cursor: pointer;
-    letter-spacing: 0.03em;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--primary-color, #1a1a18);
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  padding: 0.75em 1.75em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.35s ease;
+}
+
+.actionButton button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-color, #1a1a18);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.actionButton button span {
+  position: relative;
+  z-index: 1;
+}
+
+.actionButton button:hover::before {
+  transform: translateX(0);
 }
 
 .actionButton button:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+  color: var(--white-color, #fff);
 }
 
-/* ============================
-   RESPONSIVE (UNCHANGED LOGIC)
-============================ */
-
-/* Ultra large screens */
+/* =============================
+   RESPONSIVE
+============================= */
 @media screen and (min-width: 2000px) {
-    .room {
-        margin-bottom: 2rem;
-    }
-
-    .roomsContainer {
-        max-width: 1980px;
-    }
-
-    .roomImageContainer {
-        height: 800px;
-    }
-
-    .roomName h2 {
-        font-size: 54px;
-    }
-
-    .roomSummary {
-        padding: 1.5rem;
-    }
-
-    .roomSummaryText p {
-        font-size: 28px;
-    }
-
-    .roomPrice {
-        font-size: 36px;
-    }
-
-    .roomPrice span {
-        font-size: 36px;
-    }
-
-    .actionButton button {
-        font-size: 28px;
-    }
+  .roomsContainer { max-width: 1900px; gap: 3rem; }
+  .roomImageContainer { height: 520px; }
+  .roomName h2 { font-size: 18px; }
+  .roomSummaryText p { font-size: 20px; }
+  .roomPrice, .roomPrice span { font-size: 42px; }
+  .actionButton button { font-size: 16px; }
 }
 
-/* Large screens */
-@media screen and (max-width: 1550px) {
-    .room {
-        margin-bottom: 2rem;
-    }
-
-    .roomsContainer {
-        max-width: 1084px;
-    }
-
-    .roomName {
-        padding: 1.5rem 0;
-    }
-
-    .roomName h2 {
-        font-size: 28px;
-    }
-
-    .roomSummary {
-        gap: 1.5rem;
-    }
-
-    .roomSummaryText p {
-        font-size: 15px;
-    }
-
-    .roomPrice {
-        font-size: 22px;
-    }
-
-    .roomPrice span {
-        font-size: 22px;
-    }
-
-    .actionButton button {
-        font-size: 16px;
-    }
+@media screen and (max-width: 1200px) {
+  .roomsContainer { max-width: 960px; gap: 1.5rem; }
+  .roomImageContainer { height: 280px; }
+  .roomName h2 { font-size: 12px; }
+  .roomPrice, .roomPrice span { font-size: 24px; }
 }
 
-/* Medium screens */
-@media screen and (max-width:1150px) {
-    .roomsContainer {
-        max-width: 850px;
-    }
-
-    .roomName {
-        padding: 1rem 0;
-    }
-
-    .roomName h2 {
-        font-size: 24px;
-    }
-
-    .roomSummary {
-        gap: 1rem;
-    }
-
-    .roomPrice {
-        font-size: 20px;
-    }
-
-    .roomPrice span {
-        font-size: 20px;
-    }
+@media screen and (max-width: 900px) {
+  .roomsContainer {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+  }
+  .roomImageContainer { height: 340px; }
+  .roomName h2 { font-size: 13px; }
+  .roomPrice, .roomPrice span { font-size: 26px; }
+  .roomSummaryText p { font-size: 15px; }
 }
 
-/* Tablets */
-@media screen and (max-width:850px) {
-    .room {
-        width: 100%;
-    }
-
-    .roomsContainer {
-        max-width: 90%;
-        flex-direction: column;
-    }
-
-    .roomName h2 {
-        font-size: 28px;
-    }
-
-    .roomSummary {
-        padding: 1.5rem;
-        gap: 1.2rem;
-    }
-
-    .roomSummaryText p {
-        font-size: 18px;
-    }
-
-    .roomPrice {
-        font-size: 24px;
-    }
-
-    .roomPrice span {
-        font-size: 24px;
-    }
-
-    .actionButton button {
-        font-size: 20px;
-    }
+@media screen and (max-width: 550px) {
+  .rooms { padding: 0 1rem 4rem; }
+  .roomsContainer { max-width: 100%; gap: 1.5rem; }
+  .roomImageContainer { height: 260px; }
+  .roomName { padding: 1rem 1.25rem; }
+  .roomSummary { padding: 1.25rem; gap: 1rem; }
+  .roomPrice, .roomPrice span { font-size: 22px; }
+  .actionButton button { font-size: 10px; padding: 0.7em 1.25em; }
+  .roomSummaryText p { font-size: 13px; }
 }
 
-/* Mobile */
-@media screen and (max-width:550px) {
-    .roomsContainer {
-        margin-top: 1rem;
-    }
-
-    .room {
-        margin-bottom: 0;
-        margin-top: 1.5rem;
-    }
-
-    .roomImageContainer {
-        height: 275px;
-    }
-
-    .roomName {
-        padding: 0.5rem;
-    }
-
-    .roomName h2 {
-        font-size: 24px;
-    }
-
-    .roomSummary {
-        padding: 0.75rem;
-    }
-
-    .roomSummaryText p {
-        font-size: 14px;
-    }
-
-    .roomPrice {
-        font-size: 18px;
-    }
-
-    .roomPrice span {
-        font-size: 18px;
-    }
-
-    .actionButton button {
-        font-size: 14px;
-    }
+@media screen and (max-width: 385px) {
+  .roomImageContainer { height: 220px; }
+  .roomPrice, .roomPrice span { font-size: 19px; }
 }
