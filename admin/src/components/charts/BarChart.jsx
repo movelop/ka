@@ -63,34 +63,37 @@ const MonthlyBarChart = ({ data = [] }) => {
 
   return (
     <div className="w-full h-[160px] overflow-hidden">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 18, right: 4, left: 4, bottom: 0 }}>
-          <XAxis
-            dataKey="name"
-            tick={{ fill: "#fff", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
+  <ResponsiveContainer width="100%" height="100%">
+    <BarChart data={chartData} margin={{ top: 18, right: 4, left: 4, bottom: 0 }}>
+      <XAxis
+        dataKey="name"
+        tick={{ fill: "#fff", fontSize: 11 }}
+        axisLine={false}
+        tickLine={false}
+      />
+      <YAxis hide domain={[0, maxTotal * 1.3]} />
+      <Tooltip
+        content={<CustomTooltip />}
+        cursor={{ fill: "rgba(255,255,255,0.08)" }}
+      />
+      <Bar dataKey="total" radius={[4, 4, 0, 0]} isAnimationActive={true}>
+        {chartData.map((entry) => (
+          <Cell
+            key={entry.name}
+            fill={entry.total === maxTotal ? "#ffffff" : "rgba(242,252,253,0.55)"}
           />
-          <YAxis hide domain={[0, maxTotal * 1.3]} />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.1)" }} />
-          <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-            {chartData.map((entry) => (
-              <Cell
-                key={entry.name}
-                fill={entry.total === maxTotal ? "#ffffff" : "rgba(242,252,253,0.55)"}
-              />
-            ))}
-            <LabelList
-              dataKey="total"
-              position="top"
-              formatter={formatNGN}
-              fill="#fff"
-              fontSize={9}
-            />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+        ))}
+        <LabelList
+          dataKey="total"
+          position="top"
+          formatter={formatNGN}
+          fill="#fff"
+          fontSize={9}
+        />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+</div>
   );
 };
 

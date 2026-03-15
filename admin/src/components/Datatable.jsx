@@ -1,31 +1,73 @@
 import { useContext, useState, useEffect, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from 'react-router-dom';
+import { HiOutlineSearch } from 'react-icons/hi';
 import api from '../hooks/api';
 import useFetch from '../hooks/useFetch';
 import { AuthContext } from '../context/AuthContextProvider';
+import { useStateContext } from '../context/ContextProvider';
 
 // ─── Action Column ────────────────────────────────────────────────────────────
 
-const buildActionColumn = (path, onDelete) => ({
+const buildActionColumn = (path, onDelete, isDark, currentColor) => ({
   field: 'action',
   headerName: 'Action',
-  width: 200,
+  width: 160,
   sortable: false,
   filterable: false,
   renderCell: (params) => (
-    <div className="flex items-center gap-3">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <Link
         to={`/${path}/${params.row._id}`}
         state={{ data: params.row }}
-        className="py-1 px-2 text-blue-700 border border-dotted border-blue-800 rounded hover:bg-blue-50 transition-colors text-sm"
+        style={{
+          fontSize: '11px',
+          fontWeight: 600,
+          padding: '4px 12px',
+          borderRadius: '8px',
+          background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+          color: isDark ? '#d1d5db' : '#374151',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+          textDecoration: 'none',
+          transition: 'all 0.15s',
+          whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = `${currentColor}18`;
+          e.currentTarget.style.color = currentColor;
+          e.currentTarget.style.borderColor = `${currentColor}40`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+          e.currentTarget.style.color = isDark ? '#d1d5db' : '#374151';
+          e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+        }}
       >
-        View
+        View →
       </Link>
       <button
         type="button"
         onClick={() => onDelete(params.row._id)}
-        className="py-1 px-2 text-red-700 border border-dotted border-red-800 rounded hover:bg-red-50 transition-colors text-sm cursor-pointer"
+        style={{
+          fontSize: '11px',
+          fontWeight: 600,
+          padding: '4px 12px',
+          borderRadius: '8px',
+          background: isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.07)',
+          color: '#ef4444',
+          border: '1px solid rgba(239,68,68,0.2)',
+          cursor: 'pointer',
+          transition: 'all 0.15s',
+          whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(239,68,68,0.18)';
+          e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.07)';
+          e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)';
+        }}
       >
         Delete
       </button>
@@ -37,22 +79,22 @@ const buildActionColumn = (path, onDelete) => ({
 
 const Datatable = ({ columns, path }) => {
   const { user } = useContext(AuthContext);
+  const { currentColor, currentMode } = useStateContext();
   const { data, loading, error } = useFetch(`/${path}`);
+  const isDark = currentMode === 'Dark';
 
-  const [list, setList] = useState([]);
+  const [list, setList]             = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteError, setDeleteError] = useState(null);
 
-  // Sync fetched data into list
   useEffect(() => {
     if (data?.[path]) setList(data[path]);
   }, [data, path]);
 
-  // Derive filtered list from search term — no extra state needed
   const filteredList = searchTerm.trim()
     ? list.filter((row) =>
         Object.values(row).some(
-          (value) => value && String(value).toLowerCase().includes(searchTerm.toLowerCase())
+          (v) => v && String(v).toLowerCase().includes(searchTerm.toLowerCase())
         )
       )
     : list;
@@ -70,32 +112,77 @@ const Datatable = ({ columns, path }) => {
     }
   }, [path, user?.token]);
 
-  const actionColumn = buildActionColumn(path, handleDelete);
+  const actionColumn = buildActionColumn(path, handleDelete, isDark, currentColor);
+
+  // ── Color tokens ──────────────────────────────────────────────────────────
+  const c = {
+    border:   isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
+    bg:       isDark ? '#2d3139' : '#ffffff',
+    text:     isDark ? '#f3f4f6' : '#1f2937',
+    muted:    isDark ? '#9ca3af' : '#6b7280',
+    rowHover: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+    inputBg:  isDark ? '#383c44' : '#f9fafb',
+  };
 
   return (
-    <div className="h-[500px] flex flex-col gap-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
       {/* ── Search ── */}
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full sm:w-[400px] border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-secondary-dark-bg dark:text-gray-200 h-10 px-5 rounded-lg text-sm focus:outline-none focus:border-gray-400 transition-colors"
-        aria-label="Search table"
-      />
+      <div style={{ position: 'relative', width: '100%', maxWidth: '320px' }}>
+        <HiOutlineSearch style={{
+          position: 'absolute', left: '12px', top: '50%',
+          transform: 'translateY(-50%)',
+          color: c.muted, fontSize: '15px', pointerEvents: 'none',
+        }} />
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search table"
+          style={{
+            width: '100%',
+            height: '38px',
+            paddingLeft: '36px',
+            paddingRight: '16px',
+            fontSize: '13px',
+            borderRadius: '10px',
+            border: `1px solid ${c.border}`,
+            background: c.inputBg,
+            color: c.text,
+            outline: 'none',
+            transition: 'border-color 0.15s, box-shadow 0.15s',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = currentColor;
+            e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = c.border;
+            e.target.style.boxShadow = 'none';
+          }}
+        />
+      </div>
 
-      {/* ── Error Banners ── */}
-      {error && (
-        <p role="alert" className="text-sm text-red-500">Failed to load data.</p>
-      )}
-      {deleteError && (
-        <p role="alert" className="text-sm text-red-500">{deleteError}</p>
+      {/* ── Errors ── */}
+      {(error || deleteError) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[error && 'Failed to load data.', deleteError].filter(Boolean).map((msg, i) => (
+            <div key={i} role="alert" style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+              background: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
+              border: `1px solid ${isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'}`,
+              color: '#ef4444',
+            }}>
+              ⚠ {msg}
+            </div>
+          ))}
+        </div>
       )}
 
       {/* ── DataGrid ── */}
       <DataGrid
-        className="datagrid"
         rows={filteredList}
         columns={[...columns, actionColumn]}
         pageSize={9}
@@ -104,8 +191,62 @@ const Datatable = ({ columns, path }) => {
         disableSelectionOnClick
         getRowId={(row) => row._id}
         loading={loading}
-      />
+        autoHeight
+        sx={{
+          border: `1px solid ${c.border}`,
+          borderRadius: '12px',
+          background: c.bg,
+          color: c.text,
+          fontFamily: 'inherit',
+          fontSize: '13px',
 
+          '& .MuiDataGrid-columnHeaders': {
+            background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+            borderBottom: `1px solid ${c.border}`,
+            borderRadius: '12px 12px 0 0',
+          },
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: c.muted,
+          },
+          '& .MuiDataGrid-columnSeparator': { display: 'none' },
+
+          '& .MuiDataGrid-row': {
+            transition: 'background 0.15s',
+            borderBottom: `1px solid ${c.border}`,
+          },
+          '& .MuiDataGrid-row:hover':  { background: c.rowHover },
+          '& .MuiDataGrid-row.Mui-selected': { background: `${currentColor}12` },
+          '& .MuiDataGrid-row.Mui-selected:hover': { background: `${currentColor}18` },
+
+          '& .MuiDataGrid-cell': {
+            borderBottom: 'none',
+            color: c.text,
+            fontSize: '13px',
+          },
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
+
+          '& .MuiCheckbox-root': { color: c.muted },
+          '& .MuiCheckbox-root.Mui-checked': { color: currentColor },
+
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: `1px solid ${c.border}`,
+            background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+          },
+          '& .MuiTablePagination-root': { color: c.muted, fontSize: '12px' },
+          '& .MuiTablePagination-actions button': { color: c.muted },
+          '& .MuiTablePagination-actions button:hover': { color: c.text, background: c.rowHover },
+
+          '& .MuiDataGrid-overlay': {
+            background: isDark ? 'rgba(45,49,57,0.8)' : 'rgba(255,255,255,0.8)',
+            color: c.muted,
+          },
+        }}
+      />
     </div>
   );
 };

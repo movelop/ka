@@ -35,70 +35,105 @@ const Sidebar = () => {
   if (!activeMenu) return null;
 
   return (
-    <div className="h-screen md:overflow-hidden overflow-auto md:hover:overflow-auto pb-10">
+    <div className="flex flex-col h-screen overflow-y-auto overflow-x-hidden pb-10 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
 
-      {/* ── Header ── */}
-      <div className="flex justify-between items-center">
-        <Link
-          to="/"
-          onClick={handleCloseSidebar}
-          className="flex items-center gap-3 ml-3 mt-4 text-xl font-extrabold tracking-tight text-gray-700 dark:text-slate-900"
-        >
-          K.A HOTEL & SUITES
-        </Link>
+  {/* ── Header / Brand ── */}
+  <div className="flex justify-between items-center px-4 pt-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+    <Link
+      to="/"
+      onClick={handleCloseSidebar}
+      className="flex flex-col gap-0.5 group"
+    >
+      <span
+        className="text-xs font-semibold tracking-[0.2em] uppercase text-gray-400 dark:text-gray-500 group-hover:text-gray-500 transition-colors"
+      >
+        K.A
+      </span>
+      <span
+        className="text-base font-extrabold tracking-tight text-gray-800 dark:text-white leading-tight group-hover:opacity-80 transition-opacity"
+      >
+        Hotel & Suites
+      </span>
+    </Link>
 
-        <Tooltip title="Close menu">
-          <button
-            type="button"
-            aria-label="Close sidebar"
-            onClick={() => setActiveMenu(false)}
-            style={{ color: currentColor }}
-            className="text-xl rounded-full p-3 hover:bg-light-gray mt-4 block md:hidden"
+    <Tooltip title="Close menu" placement="right">
+      <button
+        type="button"
+        aria-label="Close sidebar"
+        onClick={() => setActiveMenu(false)}
+        style={{ color: currentColor }}
+        className="md:hidden flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      >
+        <MdOutlineCancel size={18} />
+      </button>
+    </Tooltip>
+  </div>
+
+  {/* ── Nav Links ── */}
+  <nav className="flex-1 mt-4 px-2">
+    {links.map((section) => (
+      <div key={section.title} className="mb-6">
+        <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-gray-400 dark:text-gray-600 px-3 mb-2">
+          {section.title}
+        </p>
+        {section.links.map((link) => (
+          <NavLink
+            key={link.name}
+            to={`/${link.name}`}
+            onClick={handleCloseSidebar}
+            style={({ isActive }) =>
+              isActive
+                ? { backgroundColor: `${currentColor}18`, color: currentColor }
+                : {}
+            }
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 mb-0.5
+              ${
+                isActive
+                  ? "font-semibold"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+              }`
+            }
           >
-            <MdOutlineCancel />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/* ── Nav Links ── */}
-      <nav className="mt-10">
-        {links.map((section) => (
-          <div key={section.title}>
-            <p className="text-gray-400 m-3 mt-4 uppercase text-xs font-semibold tracking-widest">
-              {section.title}
-            </p>
-            {section.links.map((link) => (
-              <NavLink
-                key={link.name}
-                to={`/${link.name}`}
-                onClick={handleCloseSidebar}
-                style={({ isActive }) => ({ backgroundColor: isActive ? currentColor : '' })}
-                className={({ isActive }) => (isActive ? ACTIVE_LINK : NORMAL_LINK)}
-              >
-                {link.icon}
-                <span className="capitalize">{link.name}</span>
-              </NavLink>
-            ))}
-          </div>
+            {({ isActive }) => (
+              <>
+                <span
+                  className="text-base flex-shrink-0 transition-transform duration-150"
+                  style={isActive ? { color: currentColor } : {}}
+                >
+                  {link.icon}
+                </span>
+                <span className="capitalize truncate">{link.name}</span>
+                {isActive && (
+                  <span
+                    className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: currentColor }}
+                  />
+                )}
+              </>
+            )}
+          </NavLink>
         ))}
+      </div>
+    ))}
+  </nav>
 
-        {/* ── Logout ── */}
-        <div>
-          <p className="text-gray-400 m-3 mt-4 uppercase text-xs font-semibold tracking-widest">
-            Actions
-          </p>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className={`${NORMAL_LINK} w-full text-left cursor-pointer`}
-          >
-            <ExitToAppIcon />
-            <span className="capitalize">Logout</span>
-          </button>
-        </div>
-      </nav>
+  {/* ── Logout ── */}
+  <div className="px-2 pt-3 border-t border-gray-100 dark:border-gray-800 mt-auto">
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium
+        text-red-500 dark:text-red-400
+        hover:bg-red-50 dark:hover:bg-red-900/20
+        transition-all duration-150"
+    >
+      <ExitToAppIcon fontSize="small" />
+      <span>Logout</span>
+    </button>
+  </div>
 
-    </div>
+</div>
   );
 };
 

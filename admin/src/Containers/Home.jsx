@@ -89,68 +89,125 @@ const Home = () => {
   const yearlyPerc  = derivePercentage(yearlyIncome, "count");
 
   return (
-    <div className="mt-24 w-full overflow-hidden">
+    <div className="w-full px-4 md:px-8 py-8 space-y-8">
 
-      {error && (
-        <p role="alert" className="text-center text-sm text-red-500 mb-4">{error}</p>
-      )}
+  {/* Error */}
+  {error && (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40 text-red-600 dark:text-red-400 text-sm">
+      <MdOutlineCancel className="text-lg flex-shrink-0" />
+      <p role="alert">{error}</p>
+    </div>
+  )}
 
-      {/* ── Top Cards ── */}
-      <div className="flex flex-wrap justify-center gap-4 max-w-full overflow-hidden">
+  {/* ── Stat Cards ── */}
+  <section>
+    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
+      Overview
+    </p>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-        {/* Earnings */}
-        <div className="bg-white dark:bg-secondary-bg rounded-xl w-full max-w-[320px] p-6">
-          <p className="font-bold text-gray-400">Earnings</p>
-          <p className="text-2xl flex items-center font-semibold">
-            <TbCurrencyNaira />
-            {income[0]?.total?.toLocaleString("en-us") ?? 0}
-          </p>
-        </div>
+      {/* Earnings card */}
+      <div
+        className="relative rounded-2xl p-6 overflow-hidden text-white"
+        style={{ backgroundColor: currentColor }}
+      >
+        {/* Decorative circle */}
+        <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+        <div className="absolute -bottom-6 -right-2 w-32 h-32 rounded-full bg-white/5" />
 
-        <StatCard
-          icon={<MdOutlineSupervisorAccount className="text-cyan-500" />}
-          value={income[0]?.count ?? 0}
-          percentage={monthlyPerc}
-          label={`${MONTHS[(income[0]?._id ?? 1) - 1] ?? "—"} Reservations`}
-        />
-
-        <StatCard
-          icon={<FiBarChart className="text-pink-500" />}
-          value={yearlyIncome[0]?.count ?? 0}
-          percentage={yearlyPerc}
-          label={`${yearlyIncome[0]?._id ?? "—"} Reservations`}
-        />
+        <p className="text-sm font-medium text-white/70 mb-1">Total Earnings</p>
+        <p className="text-3xl font-bold flex items-center gap-0.5 relative z-10">
+          <TbCurrencyNaira />
+          {income[0]?.total?.toLocaleString("en-us") ?? 0}
+        </p>
+        <p className="text-xs text-white/60 mt-2 relative z-10">
+          {MONTHS[(income[0]?._id ?? 1) - 1] ?? "—"} · Current period
+        </p>
       </div>
 
-      {/* ── Charts ── */}
-      <div className="flex flex-wrap justify-center gap-6 mt-6 max-w-full overflow-hidden">
-        <div
-          className="rounded-2xl w-full max-w-[420px] p-4"
-          style={{ backgroundColor: currentColor }}
-        >
-          <p className="text-white text-xl font-semibold mb-2">Earnings</p>
+      {/* Monthly reservations */}
+      <StatCard
+        icon={<MdOutlineSupervisorAccount className="text-cyan-500" />}
+        value={income[0]?.count ?? 0}
+        percentage={monthlyPerc}
+        label={`${MONTHS[(income[0]?._id ?? 1) - 1] ?? "—"} Reservations`}
+      />
+
+      {/* Yearly reservations */}
+      <StatCard
+        icon={<FiBarChart className="text-pink-500" />}
+        value={yearlyIncome[0]?.count ?? 0}
+        percentage={yearlyPerc}
+        label={`${yearlyIncome[0]?._id ?? "—"} Reservations`}
+      />
+    </div>
+  </section>
+
+  {/* ── Charts row ── */}
+  <section>
+    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4">
+      Analytics
+    </p>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      {/* Bar chart */}
+      <div
+        className="relative rounded-2xl p-6 overflow-hidden"
+        style={{ backgroundColor: currentColor }}
+      >
+        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
+        <p className="text-white text-base font-semibold mb-1 relative z-10">Monthly Earnings</p>
+        <p className="text-white/60 text-xs mb-4 relative z-10">Revenue breakdown by month</p>
+        <div className="relative z-10">
           <MonthyBarChart data={income} />
         </div>
-
-        <div className="bg-white dark:bg-secondary-dark-bg rounded-2xl w-full max-w-[420px] p-4">
-          <p className="text-xl font-semibold mb-2">Yearly Revenue</p>
-          <Piechart data={yearlyIncome} />
-        </div>
       </div>
 
-      {/* ── Line Chart ── */}
-      <div className="bg-white dark:bg-secondary-dark-bg rounded-2xl w-full max-w-[760px] mx-auto mt-6 p-4 overflow-hidden">
-        <p className="text-xl font-semibold mb-4">Bookings Overview</p>
-        <LineChart data={yearlyIncome} />
+      {/* Pie chart */}
+      <div className="bg-white dark:bg-secondary-dark-bg rounded-2xl p-6 border border-gray-100 dark:border-gray-700/40">
+        <p className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1">Yearly Revenue</p>
+        <p className="text-gray-400 dark:text-gray-500 text-xs mb-4">Distribution across years</p>
+        <Piechart data={yearlyIncome} />
       </div>
-
-      {/* ── Table ── */}
-      <div className="bg-white dark:bg-secondary-dark-bg rounded-2xl w-full max-w-[760px] mx-auto mt-6 p-4 overflow-hidden">
-        <p className="text-xl font-semibold mb-4">Recent Transactions</p>
-        <Table />
-      </div>
-
     </div>
+  </section>
+
+  {/* ── Full-width charts ── */}
+  <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+    {/* Line chart */}
+    <div className="bg-white dark:bg-secondary-dark-bg rounded-2xl p-6 border border-gray-100 dark:border-gray-700/40">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-base font-semibold text-gray-800 dark:text-gray-100">Bookings Overview</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Yearly booking trends</p>
+        </div>
+        <span
+          className="text-xs font-medium px-3 py-1 rounded-full text-white"
+          style={{ backgroundColor: currentColor }}
+        >
+          {yearlyIncome[0]?._id ?? "—"}
+        </span>
+      </div>
+      <LineChart data={yearlyIncome} />
+    </div>
+
+    {/* Recent transactions */}
+    <div className="bg-white dark:bg-secondary-dark-bg rounded-2xl p-6 border border-gray-100 dark:border-gray-700/40">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-base font-semibold text-gray-800 dark:text-gray-100">Recent Transactions</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Latest booking activity</p>
+        </div>
+        <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400">
+          Today
+        </span>
+      </div>
+      <Table />
+    </div>
+  </section>
+
+</div>
   );
 };
 

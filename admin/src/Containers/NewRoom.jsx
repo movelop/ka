@@ -3,94 +3,75 @@ import api from '../hooks/api';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DriveFolderUploadOutlinedIcon from '@mui/icons-material/DriveFolderUploadOutlined';
-import { TextField, Chip } from '@mui/material';
 import { AuthContext } from '../context/AuthContextProvider';
-import { roomInputs } from '../Data/formSource';
+import { roomInputs } from '../Data/formsource';
+import { useStateContext } from '../context/ContextProvider';
 
 const NewRoom = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { currentColor, currentMode } = useStateContext();
+  const isDark = currentMode === 'Dark';
 
-  const [info, setInfo] = useState({});
-  const [rooms, setRooms] = useState([]);
-  const [room, setRoom] = useState('');
+  const c = {
+    bg:      isDark ? '#2d3139' : '#ffffff',
+    border:  isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    text:    isDark ? '#f3f4f6' : '#1f2937',
+    muted:   isDark ? '#9ca3af' : '#6b7280',
+    inputBg: isDark ? '#383c44' : '#f9fafb',
+    surface: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+  };
 
-  const [files, setFiles] = useState([]);
+  const [info, setInfo]                   = useState({});
+  const [rooms, setRooms]                 = useState([]);
+  const [room, setRoom]                   = useState('');
+  const [files, setFiles]                 = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
 
-  // Clean up preview URLs to avoid memory leaks
+  /* ── Cleanup ── */
   useEffect(() => {
-    return () => {
-      previewImages.forEach((url) => URL.revokeObjectURL(url));
-    };
+    return () => { previewImages.forEach((url) => URL.revokeObjectURL(url)); };
   }, [previewImages]);
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
-  };
+  /* ── Handlers ── */
+  const handleChange = (e) => setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
 
-  // Add a room number
   const handleAddRoom = () => {
-    if (room.trim() !== '') {
-      setRooms([...rooms, { number: room }]);
-      setRoom('');
-    }
+    if (room.trim() !== '') { setRooms([...rooms, { number: room }]); setRoom(''); }
   };
 
-  // Handle file selection & generate preview
   const handleFileSelect = (e) => {
     if (!e.target.files) return;
-
     const selectedFiles = Array.from(e.target.files);
     setFiles(selectedFiles);
-
-    const previews = selectedFiles.map((file) =>
-      URL.createObjectURL(file)
-    );
-    setPreviewImages(previews);
+    setPreviewImages(selectedFiles.map((file) => URL.createObjectURL(file)));
   };
 
-  // Remove a preview image before upload
   const handleRemovePreviewImage = (index) => {
     setPreviewImages(previewImages.filter((_, i) => i !== index));
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       let uploadedImages = [];
-
       if (files.length > 0) {
         uploadedImages = await Promise.all(
           files.map(async (file) => {
             const data = new FormData();
             data.append('file', file);
             data.append('upload_preset', 'ka_unsigned');
-
             const res = await axios.post(
-              'https://api.cloudinary.com/v1_1/di5m6uq4j/image/upload',
-              data
+              'https://api.cloudinary.com/v1_1/di5m6uq4j/image/upload', data
             );
-
             return res.data.url;
           })
         );
       }
-
-      const newRoom = {
-        ...info,
-        roomNumbers: rooms,
-        images: uploadedImages,
-      };
-
-      await api.post('/rooms', newRoom, {
+      await api.post('/rooms', { ...info, roomNumbers: rooms, images: uploadedImages }, {
         headers: { token: `Bearer ${user.token}` },
       });
-
       navigate('/rooms');
     } catch (err) {
       console.error(err);
@@ -98,108 +79,250 @@ const NewRoom = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-xl md:text-3xl font-extrabold mb-5 dark:text-gray-400">
-        Create New Room
-      </h1>
+    <div style={{ padding: '0 0.5rem' }}>
 
-      <div className="lg:flex gap-5">
-        {/* IMAGE UPLOAD & PREVIEW */}
-        <div className="lg:flex-1">
-          {previewImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-4">
+      {/* Header */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <p style={{
+          fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.08em', color: c.muted, marginBottom: '4px',
+        }}>
+          Rooms
+        </p>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: c.text, margin: 0 }}>
+          Create New Room
+        </h1>
+      </div>
+
+      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+
+        {/* ── Images panel ── */}
+        <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+          <p style={{
+            fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.08em', color: c.muted, margin: 0,
+          }}>
+            Room Images
+          </p>
+
+          {/* Preview grid */}
+          {previewImages.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
               {previewImages.map((img, index) => (
-                <div key={index} className="relative">
+                <div key={index} style={{
+                  position: 'relative', borderRadius: '10px',
+                  overflow: 'hidden', aspectRatio: '4/3',
+                }}>
                   <img
                     src={img}
                     alt=""
-                    className="w-full h-[120px] object-cover rounded"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
+                  <div style={{
+                    position: 'absolute', top: '6px', left: '6px',
+                    fontSize: '9px', fontWeight: 700, padding: '2px 7px',
+                    borderRadius: '99px', background: `${currentColor}cc`,
+                    color: '#fff', textTransform: 'uppercase', letterSpacing: '0.06em',
+                  }}>
+                    New
+                  </div>
                   <button
                     type="button"
-                    className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 rounded"
                     onClick={() => handleRemovePreviewImage(index)}
+                    style={{
+                      position: 'absolute', top: '6px', right: '6px',
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: 'rgba(239,68,68,0.9)', color: '#fff',
+                      border: 'none', cursor: 'pointer',
+                      fontSize: '11px', fontWeight: 700,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(220,38,38,1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.9)'}
                   >
                     ✕
                   </button>
                 </div>
               ))}
             </div>
+          ) : (
+            /* Empty state */
+            <div style={{
+              aspectRatio: '4/3', borderRadius: '12px',
+              border: `1px dashed ${c.border}`,
+              background: c.surface,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: '8px', color: c.muted,
+            }}>
+              <DriveFolderUploadOutlinedIcon style={{ fontSize: '2rem', color: currentColor }} />
+              <span style={{ fontSize: '12px', fontWeight: 500 }}>No images yet</span>
+            </div>
           )}
 
-          <label
-            htmlFor="file"
-            className="flex items-center gap-2 text-lg font-semibold cursor-pointer"
+          {/* Upload button */}
+          <label htmlFor="file" style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            fontSize: '12px', fontWeight: 600,
+            color: currentColor, cursor: 'pointer',
+            padding: '8px 14px', borderRadius: '8px',
+            border: `1px solid ${currentColor}40`,
+            background: `${currentColor}10`,
+            transition: 'background 0.15s',
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.background = `${currentColor}20`}
+            onMouseLeave={(e) => e.currentTarget.style.background = `${currentColor}10`}
           >
-            Upload Images <DriveFolderUploadOutlinedIcon />
+            <DriveFolderUploadOutlinedIcon style={{ fontSize: '16px' }} />
+            {previewImages.length > 0 ? 'Replace images' : 'Upload images'}
           </label>
-          <input
-            type="file"
-            id="file"
-            multiple
-            hidden
-            onChange={handleFileSelect}
-          />
+          <input type="file" id="file" multiple hidden onChange={handleFileSelect} />
         </div>
 
-        {/* FORM */}
-        <div className="flex-[2] mt-5 lg:mt-0">
-          <form
-            className="w-full md:flex md:flex-wrap gap-6 px-3"
-            onSubmit={handleSubmit}
-          >
-            {/* ROOM DETAILS INPUTS */}
-            {roomInputs.map((input) => (
-              <div className="lg:w-[45%] w-full" key={input.id}>
-                <TextField
-                  fullWidth
-                  label={input.label}
-                  id={input.id}
-                  type={input.type}
-                  value={info[input.id] || ''}
-                  onChange={handleChange}
-                />
-              </div>
-            ))}
+        {/* ── Form ── */}
+        <div style={{ flex: 2, minWidth: '280px' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
 
-            {/* ROOM NUMBERS */}
-            <div className="lg:w-[45%] w-full">
-              <label>Rooms</label>
-              <div className="flex gap-2 my-3 flex-wrap">
-                {rooms.map((chip) => (
-                  <Chip
-                    key={chip.number}
-                    label={chip.number}
-                    size="small"
-                    onDelete={() =>
-                      setRooms(rooms.filter((r) => r.number !== chip.number))
-                    }
+              {/* Room detail inputs */}
+              {roomInputs.map((input) => (
+                <div key={input.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label htmlFor={input.id} style={{
+                    fontSize: '10px', fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: '0.08em',
+                    color: c.muted,
+                  }}>
+                    {input.label}
+                  </label>
+                  <input
+                    id={input.id}
+                    type={input.type}
+                    value={info[input.id] || ''}
+                    onChange={handleChange}
+                    style={{
+                      height: '40px', padding: '0 14px',
+                      fontSize: '13px', borderRadius: '10px',
+                      border: `1px solid ${c.border}`,
+                      background: c.inputBg, color: c.text,
+                      outline: 'none',
+                      transition: 'border-color 0.15s, box-shadow 0.15s',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = currentColor;
+                      e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = c.border;
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
-                ))}
-              </div>
-              <TextField
-                className="w-[75%]"
-                value={room}
-                onChange={(e) => setRoom(e.target.value)}
-                placeholder="Enter room number"
-              />
-              <button
-                type="button"
-                onClick={handleAddRoom}
-                className="ml-2 px-4 py-2 bg-blue-700 text-white rounded"
-              >
-                Add
-              </button>
-            </div>
+                </div>
+              ))}
 
-            {/* SUBMIT BUTTON */}
-            <div className="w-full flex gap-3 justify-end mt-6">
-              <button
-                type="submit"
-                className="px-5 py-2 bg-teal-800 text-white rounded"
-              >
-                Create Room
-              </button>
+              {/* Room numbers */}
+              <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <p style={{
+                  fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+                  letterSpacing: '0.08em', color: c.muted, margin: 0,
+                }}>
+                  Room Numbers
+                </p>
+
+                {rooms.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {rooms.map((chip) => (
+                      <span key={chip.number} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '5px',
+                        fontSize: '11px', fontWeight: 600,
+                        padding: '3px 10px', borderRadius: '99px',
+                        background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                        color: c.text,
+                        border: `1px solid ${c.border}`,
+                      }}>
+                        {chip.number}
+                        <button
+                          type="button"
+                          onClick={() => setRooms(rooms.filter((r) => r.number !== chip.number))}
+                          style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            color: c.muted, fontSize: '11px', lineHeight: 1, padding: '0 2px',
+                            transition: 'color 0.15s',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = c.muted}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    value={room}
+                    onChange={(e) => setRoom(e.target.value)}
+                    placeholder="Room number"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRoom())}
+                    style={{
+                      flex: 1, height: '40px', padding: '0 14px',
+                      fontSize: '13px', borderRadius: '10px',
+                      border: `1px solid ${c.border}`,
+                      background: c.inputBg, color: c.text,
+                      outline: 'none',
+                      transition: 'border-color 0.15s, box-shadow 0.15s',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = currentColor;
+                      e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = c.border;
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddRoom}
+                    style={{
+                      padding: '0 18px', height: '40px',
+                      borderRadius: '10px', border: 'none',
+                      background: `${currentColor}18`, color: currentColor,
+                      fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                      transition: 'background 0.15s', whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = `${currentColor}30`}
+                    onMouseLeave={(e) => e.currentTarget.style.background = `${currentColor}18`}
+                  >
+                    + Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 28px', borderRadius: '10px',
+                    background: currentColor, color: '#fff',
+                    fontSize: '13px', fontWeight: 600,
+                    border: 'none', cursor: 'pointer',
+                    boxShadow: `0 4px 14px ${currentColor}40`,
+                    transition: 'opacity 0.15s, transform 0.15s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
+                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  Create Room
+                </button>
+              </div>
+
             </div>
           </form>
         </div>

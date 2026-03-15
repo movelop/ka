@@ -61,27 +61,79 @@ const Navbar = () => {
   const handleActiveMenu = () => setActiveMenu(!activeMenu);
   
   return (
-    <div className='flex justify-between p-2 md:ml-6 md:mr-6 relative'>
-      <NavButton title='Menu' customFunc={handleActiveMenu} color={currentColor} icon={<AiOutlineMenu />} />
-      <div className="flex">
-        <Tooltip title='Profile' placement='bottom'>
-          <div
-            className="flex items-center gap-2 cursor-pointer p-1 hover:bg-light-gray rounded-lg"
-            onClick={() => handleClick('userProfile')}
+    <div className='flex items-center justify-between px-4 py-2 md:px-8 relative'>
+  
+  {/* Left: Hamburger menu */}
+  <NavButton
+    title='Menu'
+    customFunc={handleActiveMenu}
+    color={currentColor}
+    icon={<AiOutlineMenu />}
+  />
+
+  {/* Right: User profile */}
+  <div className="flex items-center">
+    <Tooltip title='Profile' placement='bottom' arrow>
+      <button
+        type="button"
+        className="
+          flex items-center gap-2.5
+          px-3 py-1.5 rounded-xl
+          transition-all duration-200 ease-out
+          hover:bg-gray-100 dark:hover:bg-gray-800
+          active:scale-95
+          focus:outline-none focus:ring-2 focus:ring-offset-1
+          group
+        "
+        style={{ focusRingColor: `${currentColor}40` }}
+        onClick={() => handleClick('userProfile')}
+        aria-haspopup="true"
+        aria-expanded={isClicked.userProfile}
+      >
+        {/* Avatar with online indicator */}
+        <div className="relative">
+          <img
+            src={user?.image || avatar}
+            alt="User profile"
+            className="rounded-full h-8 w-8 object-cover ring-2 ring-white dark:ring-gray-800"
+          />
+          <span
+            className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-400 ring-1 ring-white dark:ring-gray-800"
+            aria-label="Online"
+          />
+        </div>
+
+        {/* Name */}
+        <div className="hidden sm:flex flex-col items-start leading-tight">
+          <span className="text-xs text-gray-400 dark:text-gray-500">Hi,</span>
+          <span
+            className="text-sm font-semibold text-gray-700 dark:text-gray-200 capitalize"
           >
-            <img src={user?.image || avatar} alt="user-profile" className='rounded-full h-8 w-8 object-cover' />
-            <p>
-              <span className="text-gray-400 text-14">Hi,</span>{' '}
-              <span className="text-gray-400 font-bold ml-1 text-14 capitalize">
-                {user?.firstName}
-              </span>
-            </p>
-            <MdKeyboardArrowDown className="text-gray-400 text-14" />
-          </div>
-        </Tooltip>
-        {isClicked.userProfile && (<UserProfile />)}
+            {user?.firstName}
+          </span>
+        </div>
+
+        {/* Chevron */}
+        <MdKeyboardArrowDown
+          className={`
+            text-gray-400 dark:text-gray-500 text-lg
+            transition-transform duration-200
+            ${isClicked.userProfile ? 'rotate-180' : 'rotate-0'}
+            group-hover:text-gray-600 dark:group-hover:text-gray-300
+          `}
+        />
+      </button>
+    </Tooltip>
+
+    {/* Profile dropdown */}
+    {isClicked.userProfile && (
+      <div className="animate-fade-in">
+        <UserProfile />
       </div>
-    </div>
+    )}
+  </div>
+
+</div>
   )
 }
 

@@ -3,57 +3,52 @@ import api from '../hooks/api';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
-import { Checkbox, FormControlLabel, TextField } from '@mui/material';
-import { userInputs } from '../Data/formSource';
+import { userInputs } from '../Data/formsource';
 import { AuthContext } from '../context/AuthContextProvider';
+import { useStateContext } from '../context/ContextProvider';
 
 const NewUser = () => {
-  const [file, setFile] = useState("");
-  const [info, setInfo] = useState({});
+  const [file, setFile]       = useState("");
+  const [info, setInfo]       = useState({});
   const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const navigate              = useNavigate();
+  const { user }              = useContext(AuthContext);
+  const { currentColor, currentMode } = useStateContext();
+  const isDark = currentMode === 'Dark';
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  const c = {
+    bg:      isDark ? '#2d3139' : '#ffffff',
+    border:  isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    text:    isDark ? '#f3f4f6' : '#1f2937',
+    muted:   isDark ? '#9ca3af' : '#6b7280',
+    inputBg: isDark ? '#383c44' : '#f9fafb',
+    surface: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
   };
 
-  // Admin checkbox toggle
-  const handleSelect = (e) => {
-    setIsAdmin(e.target.checked);
-  };
+  /* ── Handlers ── */
+  const handleChange = (e) => setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  const handleSelect = (e) => setIsAdmin(e.target.checked);
 
-  // ---------------- OUR CONFIRMED handleSubmit ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       let profilePicUrl = "";
-
-      // Upload image if selected
       if (file) {
         const data = new FormData();
         data.append('file', file);
-        data.append('upload_preset', 'dczars');
-
+        data.append('upload_preset', 'ka_unsigned');
         const uploadRes = await axios.post(
-          "https://api.cloudinary.com/v1_1/dmxz3k6o4/image/upload",
-          data
+          'https://api.cloudinary.com/v1_1/di5m6uq4j/image/upload', data
         );
         profilePicUrl = uploadRes.data.url;
       }
-
-      // Construct new user object
       const newUser = {
         ...info,
         firstName: info.firstName || info.firstname || "",
-        lastName: info.lastName || info.lastname || "",
+        lastName:  info.lastName  || info.lastname  || "",
         isAdmin,
         imgage: profilePicUrl,
       };
-
-      // Send to backend
       await api.post('/auth/register', newUser, {
         headers: { token: `Bearer ${user.token}` },
       });
@@ -63,75 +58,219 @@ const NewUser = () => {
     }
   };
 
+  /* ── Render ── */
   return (
-    <div className="m-2 md:m-10 mt-24 p-[20px] md:p-10 bg-white rounded-3xl">
-      <div>
-        <h1 className="text-xl md:text-3xl font-extrabold tracking tight mb-[20px] dark:text-gray-400 capitalize">Add New User</h1>
-        <div className="lg:flex lg:gap-5">
-          {/* Image Preview */}
-          <div className="lg:flex-1">
-            <img
-              src={
-                file
-                  ? URL.createObjectURL(file)
-                  : "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
-              }
-              alt=""
-              className='w-full rounded-lg object-cover'
-            />
+    <div style={{
+      margin: '1.5rem',
+      marginTop: '6rem',
+      padding: '2rem',
+      background: c.bg,
+      borderRadius: '20px',
+      border: `1px solid ${c.border}`,
+    }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: '2rem' }}>
+        <p style={{
+          fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.08em', color: c.muted, marginBottom: '4px',
+        }}>
+          Users
+        </p>
+        <h1 style={{ fontSize: '22px', fontWeight: 700, color: c.text, margin: 0 }}>
+          Add New User
+        </h1>
+      </div>
+
+      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+
+        {/* ── Image section ── */}
+        <div style={{ flex: 1, minWidth: '180px', maxWidth: '260px' }}>
+          <div style={{
+            width: '100%', aspectRatio: '1',
+            borderRadius: '16px', overflow: 'hidden',
+            border: `1px solid ${c.border}`,
+            background: c.surface,
+            position: 'relative',
+          }}>
+            {file ? (
+              <>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setFile("")}
+                  style={{
+                    position: 'absolute', top: '10px', right: '10px',
+                    width: '28px', height: '28px', borderRadius: '50%',
+                    background: 'rgba(239,68,68,0.9)', color: '#fff',
+                    border: 'none', cursor: 'pointer',
+                    fontSize: '12px', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(220,38,38,1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.9)'}
+                  aria-label="Remove image"
+                >
+                  ✕
+                </button>
+              </>
+            ) : (
+              <label htmlFor="file" style={{
+                width: '100%', height: '100%',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                gap: '8px', cursor: 'pointer', color: c.muted,
+              }}>
+                <DriveFolderUploadOutlinedIcon style={{ fontSize: '2rem', color: currentColor }} />
+                <span style={{ fontSize: '12px', fontWeight: 500 }}>Upload photo</span>
+              </label>
+            )}
           </div>
 
-          {/* Form */}
-          <div className="flex-[2] mt-5 lg:mt-0">
-            <form className='w-full md:flex md:flex-wrap md:gap-[30px] justify-between' onSubmit={handleSubmit}>
-              {/* File Upload */}
-              <div className="w-[45%]">
-                <label htmlFor="file" className='flex items-center gap-2 text-xl font-semibold cursor-pointer'>
-                  Image: <DriveFolderUploadOutlinedIcon />
-                </label>
-                <input
-                  type="file"
-                  id="file"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  style={{ display: "none" }}
-                />
-              </div>
+          {/* Replace photo */}
+          {file && (
+            <label htmlFor="file" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '6px', marginTop: '12px',
+              fontSize: '12px', fontWeight: 600,
+              color: currentColor, cursor: 'pointer',
+              padding: '7px 14px', borderRadius: '8px',
+              border: `1px solid ${currentColor}40`,
+              background: `${currentColor}10`,
+              transition: 'background 0.15s',
+            }}
+              onMouseEnter={(e) => e.currentTarget.style.background = `${currentColor}20`}
+              onMouseLeave={(e) => e.currentTarget.style.background = `${currentColor}10`}
+            >
+              <DriveFolderUploadOutlinedIcon style={{ fontSize: '15px' }} />
+              Replace photo
+            </label>
+          )}
 
-              {/* User Inputs */}
-              {userInputs.map((input) => (
-                <div className='lg:w-[45%] w-full mt-4 mb-4 md:mt-2 md:mb-2' key={input.id}>
-                  <TextField
-                    onChange={handleChange}
-                    className="w-full"
-                    placeholder={input.placeholder}
-                    label={input.label}
-                    variant="outlined"
-                    id={input.id === "firstname" ? "firstName" : input.id === "lastname" ? "lastName" : input.id}
-                    type={input.type}
-                  />
+          <input
+            type="file"
+            id="file"
+            onChange={(e) => setFile(e.target.files[0])}
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* ── Form ── */}
+        <div style={{ flex: 2, minWidth: '280px' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+
+              {/* User inputs */}
+              {userInputs.map((input) => {
+                const id = input.id === "firstname" ? "firstName"
+                         : input.id === "lastname"  ? "lastName"
+                         : input.id;
+                return (
+                  <div key={input.id} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label htmlFor={id} style={{
+                      fontSize: '10px', fontWeight: 700,
+                      textTransform: 'uppercase', letterSpacing: '0.08em',
+                      color: c.muted,
+                    }}>
+                      {input.label}
+                    </label>
+                    <input
+                      id={id}
+                      type={input.type}
+                      placeholder={input.placeholder}
+                      onChange={handleChange}
+                      style={{
+                        height: '40px', padding: '0 14px',
+                        fontSize: '13px', borderRadius: '10px',
+                        border: `1px solid ${c.border}`,
+                        background: c.inputBg, color: c.text,
+                        outline: 'none',
+                        transition: 'border-color 0.15s, box-shadow 0.15s',
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = currentColor;
+                        e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = c.border;
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    />
+                  </div>
+                );
+              })}
+
+              {/* Admin toggle */}
+              <div style={{
+                gridColumn: '1 / -1',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '12px 16px', borderRadius: '12px',
+                border: `1px solid ${c.border}`,
+                background: c.surface,
+              }}>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: c.text, margin: 0 }}>
+                    Administrator
+                  </p>
+                  <p style={{ fontSize: '11px', color: c.muted, margin: '2px 0 0' }}>
+                    Grant full access to this user
+                  </p>
                 </div>
-              ))}
-
-              {/* Admin Checkbox */}
-              <div className='lg:w-[45%] w-full mt-4 mb-4 md:mt-0 md:mb-2'>
-                <FormControlLabel
-                  label="Admin"
-                  labelPlacement="start"
-                  control={<Checkbox onChange={handleSelect} />}
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="w-[100%] flex justify-end lg:pr-4">
                 <button
-                  type="submit"
-                  className="py-[10px] px-[20px] text-white bg-teal-800 font-body cursor-pointer rounded-sm"
+                  type="button"
+                  onClick={() => setIsAdmin((prev) => !prev)}
+                  role="switch"
+                  aria-checked={isAdmin}
+                  style={{
+                    width: '44px', height: '24px',
+                    borderRadius: '99px', border: 'none', cursor: 'pointer',
+                    background: isAdmin
+                      ? currentColor
+                      : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
+                    position: 'relative',
+                    transition: 'background 0.2s',
+                    flexShrink: 0,
+                  }}
                 >
-                  Send
+                  <span style={{
+                    position: 'absolute', top: '3px',
+                    left: isAdmin ? '23px' : '3px',
+                    width: '18px', height: '18px',
+                    borderRadius: '50%', background: '#fff',
+                    transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  }} />
                 </button>
               </div>
-            </form>
-          </div>
+
+              {/* Submit */}
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 28px', borderRadius: '10px',
+                    background: currentColor, color: '#fff',
+                    fontSize: '13px', fontWeight: 600,
+                    border: 'none', cursor: 'pointer',
+                    boxShadow: `0 4px 14px ${currentColor}40`,
+                    transition: 'opacity 0.15s, transform 0.15s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
+                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  Create User
+                </button>
+              </div>
+
+            </div>
+          </form>
         </div>
       </div>
     </div>

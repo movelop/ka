@@ -1,16 +1,18 @@
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from 'react-router-dom';
+import { HiOutlineSearch } from 'react-icons/hi';
 import api from '../hooks/api';
 import useFetch from '../hooks/useFetch';
 import { AuthContext } from '../context/AuthContextProvider';
+import { useStateContext } from '../context/ContextProvider';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getDatesInRange = (startDate, endDate) => {
-  const start = new Date(startDate);
-  const end   = new Date(endDate);
-  const dates = [];
+  const start   = new Date(startDate);
+  const end     = new Date(endDate);
+  const dates   = [];
   const current = new Date(start);
   while (current <= end) {
     dates.push(current.getTime());
@@ -32,25 +34,62 @@ const cancelRoomAvailability = (selectedRooms, alldates, token) =>
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
-const StatusBadge = ({ row, onCheckin, onCheckout }) => {
-  if (row.cancelled) {
-    return <span className="py-1 px-2 text-xs font-medium text-red-700 border border-dotted border-red-400 rounded bg-red-50">Cancelled</span>;
-  }
-  if (row.checkedIn && row.checkedOut) {
-    return <span className="py-1 px-2 text-xs font-medium text-gray-500 border border-dotted border-gray-400 rounded bg-gray-50">Checked Out</span>;
-  }
-  if (row.checkedIn && !row.checkedOut) {
-    return (
-      <button type="button" onClick={() => onCheckout(row)}
-        className="py-1 px-2 text-xs font-medium text-orange-700 border border-dotted border-orange-500 rounded hover:bg-orange-50 transition-colors cursor-pointer">
-        Check Out
-      </button>
-    );
-  }
+const StatusBadge = ({ row, onCheckin, onCheckout, currentColor }) => {
+  const base = {
+    fontSize: '11px',
+    fontWeight: 600,
+    padding: '3px 10px',
+    borderRadius: '99px',
+    border: 'none',
+    cursor: 'default',
+    whiteSpace: 'nowrap',
+  };
+
+  if (row.cancelled) return (
+    <span style={{ ...base, background: 'rgba(239,68,68,0.1)', color: '#dc2626' }}>
+      Cancelled
+    </span>
+  );
+
+  if (row.checkedIn && row.checkedOut) return (
+    <span style={{ ...base, background: 'rgba(107,114,128,0.1)', color: '#6b7280' }}>
+      Checked Out
+    </span>
+  );
+
+  if (row.checkedIn && !row.checkedOut) return (
+    <button
+      type="button"
+      onClick={() => onCheckout(row)}
+      style={{
+        ...base,
+        cursor: 'pointer',
+        background: 'rgba(249,115,22,0.1)',
+        color: '#ea580c',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(249,115,22,0.2)'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(249,115,22,0.1)'}
+    >
+      Check Out ↗
+    </button>
+  );
+
   return (
-    <button type="button" onClick={() => onCheckin(row)}
-      className="py-1 px-2 text-xs font-medium text-green-700 border border-dotted border-green-600 rounded hover:bg-green-50 transition-colors cursor-pointer">
-      Check In
+    <button
+      type="button"
+      onClick={() => onCheckin(row)}
+      style={{
+        ...base,
+        cursor: 'pointer',
+        background: `${currentColor}18`,
+        color: currentColor,
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = `${currentColor}30`}
+      onMouseLeave={(e) => e.currentTarget.style.background = `${currentColor}18`}
+    >
+      Check In ↗
     </button>
   );
 };
@@ -59,18 +98,18 @@ const StatusBadge = ({ row, onCheckin, onCheckout }) => {
 
 const BookingTable = ({ columns, path }) => {
   const { data, loading, error } = useFetch(`/${path}`);
-  const { user } = useContext(AuthContext);
+  const { user }                 = useContext(AuthContext);
+  const { currentColor, currentMode } = useStateContext();
+  const isDark = currentMode === 'Dark';
 
   const [list,        setList]        = useState([]);
   const [searchTerm,  setSearchTerm]  = useState('');
   const [actionError, setActionError] = useState(null);
 
-  // Sync fetched data into list
   useEffect(() => {
     if (data?.[path]) setList(data[path]);
   }, [data, path]);
 
-  // Derive filtered list — no state mutation on search
   const filteredList = searchTerm.trim()
     ? list.filter((row) =>
         Object.values(row).some(
@@ -79,7 +118,8 @@ const BookingTable = ({ columns, path }) => {
       )
     : list;
 
-  // ── Delete ──
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const handleDelete = useCallback(async (row) => {
     setActionError(null);
     const alldates = getDatesInRange(row.startDate, row.endDate);
@@ -95,7 +135,6 @@ const BookingTable = ({ columns, path }) => {
     }
   }, [path, user?.token]);
 
-  // ── Check Out ──
   const handleCheckout = useCallback(async (row) => {
     setActionError(null);
     const alldates = getDatesInRange(row.startDate, row.endDate);
@@ -113,7 +152,6 @@ const BookingTable = ({ columns, path }) => {
     }
   }, [user?.token]);
 
-  // ── Check In ──
   const handleCheckin = useCallback(async (row) => {
     setActionError(null);
     try {
@@ -129,12 +167,24 @@ const BookingTable = ({ columns, path }) => {
     }
   }, [user?.token]);
 
-  // ── Action Columns ──
+  // ── Color tokens ──────────────────────────────────────────────────────────
+
+  const c = {
+    border:   isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
+    bg:       isDark ? '#2d3139' : '#ffffff',
+    text:     isDark ? '#f3f4f6' : '#1f2937',
+    muted:    isDark ? '#9ca3af' : '#6b7280',
+    rowHover: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+    inputBg:  isDark ? '#383c44' : '#f9fafb',
+  };
+
+  // ── Action columns ────────────────────────────────────────────────────────
+
   const actionColumns = [
     {
       field: 'status',
       headerName: 'Status',
-      width: 150,
+      width: 130,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -142,6 +192,7 @@ const BookingTable = ({ columns, path }) => {
           row={params.row}
           onCheckin={handleCheckin}
           onCheckout={handleCheckout}
+          currentColor={currentColor}
         />
       ),
     },
@@ -152,18 +203,54 @@ const BookingTable = ({ columns, path }) => {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Link
             to={`/${path}/${params.row._id}`}
             state={{ data: params.row }}
-            className="py-1 px-2 text-xs font-medium text-blue-700 border border-dotted border-blue-500 rounded hover:bg-blue-50 transition-colors"
+            style={{
+              fontSize: '11px', fontWeight: 600,
+              padding: '4px 12px', borderRadius: '8px',
+              background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+              color: c.muted,
+              border: `1px solid ${c.border}`,
+              textDecoration: 'none',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = `${currentColor}18`;
+              e.currentTarget.style.color = currentColor;
+              e.currentTarget.style.borderColor = `${currentColor}40`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+              e.currentTarget.style.color = c.muted;
+              e.currentTarget.style.borderColor = c.border;
+            }}
           >
-            View
+            View →
           </Link>
           <button
             type="button"
             onClick={() => handleDelete(params.row)}
-            className="py-1 px-2 text-xs font-medium text-red-700 border border-dotted border-red-500 rounded hover:bg-red-50 transition-colors cursor-pointer"
+            style={{
+              fontSize: '11px', fontWeight: 600,
+              padding: '4px 12px', borderRadius: '8px',
+              background: isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.07)',
+              color: '#ef4444',
+              border: '1px solid rgba(239,68,68,0.2)',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(239,68,68,0.18)';
+              e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.07)';
+              e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)';
+            }}
           >
             Delete
           </button>
@@ -173,37 +260,120 @@ const BookingTable = ({ columns, path }) => {
   ];
 
   return (
-    <div className="h-[500px] flex flex-col gap-3 overflow-hidden min-w-0 w-full">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
 
       {/* ── Search ── */}
-      <input
-        type="text"
-        placeholder="Search bookings..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        aria-label="Search bookings"
-        className="w-full sm:w-[400px] border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-secondary-dark-bg dark:text-gray-200 h-10 px-5 rounded-lg text-sm focus:outline-none focus:border-gray-400 transition-colors shrink-0"
-      />
-
-      {/* ── Error Banners ── */}
-      {error       && <p role="alert" className="text-sm text-red-500">Failed to load bookings.</p>}
-      {actionError && <p role="alert" className="text-sm text-red-500">{actionError}</p>}
-
-      {/* ── DataGrid ── */}
-      <div className="flex-1 overflow-auto min-w-0">
-        <DataGrid
-          className="datagrid"
-          rows={filteredList}
-          columns={[...columns, ...actionColumns]}
-          pageSize={9}
-          rowsPerPageOptions={[9]}
-          checkboxSelection
-          disableSelectionOnClick
-          getRowId={(row) => row._id}
-          loading={loading}
+      <div style={{ position: 'relative', width: '100%', maxWidth: '320px' }}>
+        <HiOutlineSearch style={{
+          position: 'absolute', left: '12px', top: '50%',
+          transform: 'translateY(-50%)',
+          color: c.muted, fontSize: '15px', pointerEvents: 'none',
+        }} />
+        <input
+          type="text"
+          placeholder="Search bookings..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search bookings"
+          style={{
+            width: '100%', height: '38px',
+            paddingLeft: '36px', paddingRight: '16px',
+            fontSize: '13px', borderRadius: '10px',
+            border: `1px solid ${c.border}`,
+            background: c.inputBg,
+            color: c.text,
+            outline: 'none',
+            transition: 'border-color 0.15s, box-shadow 0.15s',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = currentColor;
+            e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = c.border;
+            e.target.style.boxShadow = 'none';
+          }}
         />
       </div>
 
+      {/* ── Errors ── */}
+      {(error || actionError) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {[error && 'Failed to load bookings.', actionError].filter(Boolean).map((msg, i) => (
+            <div key={i} role="alert" style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+              background: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
+              border: `1px solid ${isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.15)'}`,
+              color: '#ef4444',
+            }}>
+              ⚠ {msg}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── DataGrid ── */}
+      <DataGrid
+        rows={filteredList}
+        columns={[...columns, ...actionColumns]}
+        pageSize={9}
+        rowsPerPageOptions={[9]}
+        checkboxSelection
+        disableSelectionOnClick
+        getRowId={(row) => row._id}
+        loading={loading}
+        autoHeight
+        sx={{
+          border: `1px solid ${c.border}`,
+          borderRadius: '12px',
+          background: c.bg,
+          color: c.text,
+          fontFamily: 'inherit',
+          fontSize: '13px',
+
+          '& .MuiDataGrid-columnHeaders': {
+            background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+            borderBottom: `1px solid ${c.border}`,
+            borderRadius: '12px 12px 0 0',
+          },
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontSize: '10px', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.08em',
+            color: c.muted,
+          },
+          '& .MuiDataGrid-columnSeparator': { display: 'none' },
+
+          '& .MuiDataGrid-row': {
+            transition: 'background 0.15s',
+            borderBottom: `1px solid ${c.border}`,
+          },
+          '& .MuiDataGrid-row:hover': { background: c.rowHover },
+          '& .MuiDataGrid-row.Mui-selected': { background: `${currentColor}12` },
+          '& .MuiDataGrid-row.Mui-selected:hover': { background: `${currentColor}18` },
+
+          '& .MuiDataGrid-cell': {
+            borderBottom: 'none', color: c.text, fontSize: '13px',
+          },
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within': { outline: 'none' },
+          '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
+
+          '& .MuiCheckbox-root': { color: c.muted },
+          '& .MuiCheckbox-root.Mui-checked': { color: currentColor },
+
+          '& .MuiDataGrid-footerContainer': {
+            borderTop: `1px solid ${c.border}`,
+            background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+          },
+          '& .MuiTablePagination-root': { color: c.muted, fontSize: '12px' },
+          '& .MuiTablePagination-actions button': { color: c.muted },
+          '& .MuiTablePagination-actions button:hover': { color: c.text, background: c.rowHover },
+          '& .MuiDataGrid-overlay': {
+            background: isDark ? 'rgba(45,49,57,0.8)' : 'rgba(255,255,255,0.8)',
+            color: c.muted,
+          },
+        }}
+      />
     </div>
   );
 };

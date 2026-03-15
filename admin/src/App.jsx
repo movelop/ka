@@ -6,19 +6,27 @@ import { AuthContext } from './context/AuthContextProvider';
 import { Home, List, Login, NewBooking, NewFacility, NewRoom, NewUser, Single } from './Containers';
 import './App.css';
 import AppWrapper from './wrapper/AppWrapper';
-import { userColumns, roomColumns, facilityColumns,bookingColumns } from './Data/datatablesource';
+import { userColumns, roomColumns, facilityColumns, bookingColumns } from './Data/datatablesource';
+
+// Eliminates the repeated ternary pattern across every route
+const ProtectedRoute = ({ children }) => {
+  const { user } = useContext(AuthContext);
+  if (!user) return <Navigate to="/login" replace />;
+  return <AppWrapper>{children}</AppWrapper>;
+};
 
 const App = () => {
   const { setCurrentColor, setCurrentMode } = useStateContext();
-  const { user } = useContext(AuthContext);
   const location = useLocation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
+
   useEffect(() => {
     const currentThemeColor = localStorage.getItem('colorMode');
     const currentThemeMode = localStorage.getItem('themeMode');
-    if(currentThemeColor && currentThemeMode) {
+    if (currentThemeColor && currentThemeMode) {
       setCurrentColor(currentThemeColor);
       setCurrentMode(currentThemeMode);
     }
@@ -26,117 +34,68 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path='/'>
-        <Route path = 'login' element= { <Login /> } />
-        <Route path='dashboard' element = {
-          user ? (
-            <AppWrapper>
-              <Home />
-            </AppWrapper>
-          ): (<Navigate to ='/login' />)
+      <Route path="/">
+        <Route path="login" element={<Login />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+
+        <Route path="dashboard" element={
+          <ProtectedRoute><Home /></ProtectedRoute>
         } />
-        <Route index element = {
-          user ? (
-            <AppWrapper>
-              <Navigate to = 'dashboard' />
-            </AppWrapper>
-          ) : (<Navigate to='/login' />)
-        }/>
-        <Route path='users'>
-          <Route index element = {
-            user ? (
-              <AppWrapper>
-                <List columns = { userColumns } />
-              </AppWrapper>
-            ): (<Navigate to='/login' />)
-          }/>
-          <Route path='new' element= {
-            user ? (
-              <AppWrapper>
-                <NewUser />
-              </AppWrapper>
-            ) : (<Navigate to= '/login' />)
-          }/>
-          <Route path=':userId' element = {
-            user ? (
-              <AppWrapper>
-                <Single type = 'user' />
-              </AppWrapper>
-            ) : (<Navigate to = '/login' />)
-          }/>
-        </Route>
-        <Route path='facilities'>
+
+        {/* Users */}
+        <Route path="users">
           <Route index element={
-            user ? (
-              <AppWrapper>
-                <List columns = { facilityColumns } />
-              </AppWrapper>
-            ) : (<Navigate to = '/login' />)
+            <ProtectedRoute><List columns={userColumns} /></ProtectedRoute>
           } />
           <Route path="new" element={
-            user ? (
-                <AppWrapper>
-                    <NewFacility />
-                </AppWrapper>
-            ): (<Navigate to='/login' />)
-          }/>
-          <Route path=':id' element = {
-            user ? (
-              <AppWrapper>
-                <Single type = 'facility' />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+            <ProtectedRoute><NewUser /></ProtectedRoute>
+          } />
+          <Route path=":userId" element={
+            <ProtectedRoute><Single type="user" /></ProtectedRoute>
           } />
         </Route>
-        <Route path='rooms'>
-          <Route index element = {
-            user ? (
-              <AppWrapper>
-                <List columns = { roomColumns } />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+
+        {/* Facilities */}
+        <Route path="facilities">
+          <Route index element={
+            <ProtectedRoute><List columns={facilityColumns} /></ProtectedRoute>
           } />
-          <Route path='new' element= {
-            user ? (
-              <AppWrapper>
-                <NewRoom />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+          <Route path="new" element={
+            <ProtectedRoute><NewFacility /></ProtectedRoute>
           } />
-          <Route path=':roomId' element= {
-            user ? (
-              <AppWrapper>
-                <Single type='room' />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+          <Route path=":id" element={
+            <ProtectedRoute><Single type="facility" /></ProtectedRoute>
           } />
         </Route>
-        <Route path='bookings'>
-          <Route index element= {
-            user ? (
-              <AppWrapper>
-                <List columns={ bookingColumns } />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+
+        {/* Rooms */}
+        <Route path="rooms">
+          <Route index element={
+            <ProtectedRoute><List columns={roomColumns} /></ProtectedRoute>
           } />
-          <Route path='new' element= {
-            user ? (
-              <AppWrapper>
-                <NewBooking />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+          <Route path="new" element={
+            <ProtectedRoute><NewRoom /></ProtectedRoute>
           } />
-          <Route path=':bookingId' element= {
-            user ? (
-              <AppWrapper>
-                <Single type='booking' />
-              </AppWrapper>
-            ) : (<Navigate to='/login' />)
+          <Route path=":roomId" element={
+            <ProtectedRoute><Single type="room" /></ProtectedRoute>
+          } />
+        </Route>
+
+        {/* Bookings */}
+        <Route path="bookings">
+          <Route index element={
+            <ProtectedRoute><List columns={bookingColumns} /></ProtectedRoute>
+          } />
+          <Route path="new" element={
+            <ProtectedRoute><NewBooking /></ProtectedRoute>
+          } />
+          <Route path=":bookingId" element={
+            <ProtectedRoute><Single type="booking" /></ProtectedRoute>
           } />
         </Route>
       </Route>
     </Routes>
-  )
-}
+  );
+};
 
-export default App
+export default App;
