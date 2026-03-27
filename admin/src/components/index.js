@@ -9,7 +9,7 @@ export { default as Header } from './Header';
 export { default as Table } from './TableData';
 export { default as Datatable } from './Datatable';
 export { default as LineChart } from './charts/LineChart';
-export { default as Piechart } from './charts/Piechart';
+export { default as Piechart } from './charts/PieChart';
 export { default as MonthyBarChart } from './charts/BarChart';
 export { default as SingleDetails } from './SingleDetails';
 export { default as EditRoom } from './EditRoom';
