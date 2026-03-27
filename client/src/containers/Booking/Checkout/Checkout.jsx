@@ -274,6 +274,16 @@ const Checkout = () => {
                                     />
                                 </div>
                                 <div className="guestFormInput">
+                                    <label>Address</label>
+                                    <input 
+                                        type="email"
+                                        onChange={handleChange}
+                                        required
+                                        className='guestDetailsInput'
+                                        name='address   '
+                                    />
+                                </div>
+                                <div className="guestFormInput">
                                     <label>Phone</label>
                                     <input 
                                         type="tel"

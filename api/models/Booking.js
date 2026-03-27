@@ -114,6 +114,10 @@ const BookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
       index: true,
+    },
+    address: {
+      type: String,
+      trim: true,
     }
   },
   {

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 import { useStateContext } from './context/ContextProvider';
 import { AuthContext } from './context/AuthContextProvider';
-import { Home, List, Login, NewBooking, NewFacility, NewRoom, NewUser, Single } from './Containers';
+import { Home, List, Login, NewBooking, NewFacility, NewRoom, NewUser, Single,BookingReceipt } from './Containers';
 import './App.css';
 import AppWrapper from './wrapper/AppWrapper';
 import { userColumns, roomColumns, facilityColumns, bookingColumns } from './Data/datatablesource';
@@ -88,6 +88,9 @@ const App = () => {
           } />
           <Route path="new" element={
             <ProtectedRoute><NewBooking /></ProtectedRoute>
+          } />
+          <Route path='receipt' element ={
+            <ProtectedRoute><BookingReceipt/></ProtectedRoute>
           } />
           <Route path=":bookingId" element={
             <ProtectedRoute><Single type="booking" /></ProtectedRoute>

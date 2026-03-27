@@ -6,12 +6,14 @@ import './Heading.css';
 
 const Heading = ({ img }) => {
   return (
-    <div
-      className="heading"
-      style={{
-        background: `no-repeat center/cover url(${img})`,
-      }}
-    >
+    <div className="heading">
+      {/* Background image rendered as a dedicated layer for crisp rendering */}
+      <div
+        className="headingBg"
+        style={{ backgroundImage: `url(${img})` }}
+        aria-hidden="true"
+      />
+
       {/* Navbar sits outside the overlay — independent stacking context */}
       <Navbar />
 

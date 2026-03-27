@@ -25,7 +25,8 @@ export const createBooking = async (req, res, next) => {
       adults,
       children,
       paymentReference,
-      registeredBy
+      registeredBy,
+      address
     } = req.body;
 
     if (
@@ -82,6 +83,7 @@ export const createBooking = async (req, res, next) => {
       paymentReference,
       confirmation,
       registeredBy,
+      address,
     });
 
     res.status(201).json({ success: true, booking });

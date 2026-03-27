@@ -178,7 +178,7 @@ export const bookingColumns = [
     renderCell: (params) => {
       return (
         <div className="flex items-center">
-          <span className="capitalize">{params.row.paymentReference || 'Cash Payment'}</span>
+          <span className="capitalize">{params.row.paymentReference || 'Walk-in Customer'}</span>
         </div>
       );
     },

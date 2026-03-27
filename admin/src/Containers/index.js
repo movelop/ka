@@ -6,3 +6,4 @@ export { default as NewUser } from './NewUser';
 export { default as NewBooking } from './NewBooking';
 export { default as NewFacility } from './NewFacility';
 export { default as NewRoom } from './NewRoom';
+export { default as BookingReceipt } from './BookingReceipt';

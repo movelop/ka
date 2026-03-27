@@ -128,5 +128,11 @@ export const bookingInputs = [
     label: 'Identification Number',
     type: 'text',
     placeholder: '1234567899876545'
+  }, 
+  {
+    id: 'address',
+    label: 'Address',
+    type: 'address',
+    placeholder: '50, Ige Daramola Street, Iyana Iyesi, Ota.'
   }
 ]

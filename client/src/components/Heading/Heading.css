@@ -10,9 +10,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* overflow: hidden removed — it clips the search dropdowns */
-  overflow: visible;
+  overflow: visible; /* keep visible — preserves search dropdown behaviour */
   margin-bottom: 5rem;
+}
+
+/* =============================
+   BACKGROUND IMAGE LAYER
+   Isolated into its own element so transforms/compositing
+   never affect child text or overlay sharpness.
+============================= */
+.headingBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  /* Explicit properties — avoids browser shorthand misparsing */
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+
+  /* Crisp rendering on all browsers */
+  image-rendering: -webkit-optimize-contrast; /* Safari/Chrome */
+  image-rendering: crisp-edges;               /* Firefox */
+
+  /* Force GPU layer without subpixel blur */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  /* Prevent iOS Safari scroll blur */
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: auto; /* 'auto' avoids the promotion that causes blur */
 }
 
 /* Layered overlays for depth */
@@ -41,11 +69,6 @@
   background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%);
   z-index: 1;
   pointer-events: none;
-}
-
-/* Background image zoom-in on load */
-.heading > div[style] {
-  transition: transform 8s ease;
 }
 
 /* =============================
@@ -177,7 +200,7 @@
   position: absolute;
   bottom: -28px;
   width: 100%;
-  z-index: 900; /* high enough to clear content sections below hero */
+  z-index: 900;
   display: flex;
   justify-content: center;
   animation: heroReveal 1.2s 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;

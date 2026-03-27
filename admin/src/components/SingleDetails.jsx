@@ -207,8 +207,9 @@ const SingleDetails = ({ type, data, img }) => {
           <Field label="ID Number"      value={data.identity || 'NIL'} isDark={isDark} mono />
           <Field label="Check-in"       value={formatDate(data.startDate)} isDark={isDark} />
           <Field label="Check-out"      value={formatDate(data.endDate)}   isDark={isDark} />
-          <Field label="Payment Ref"    value={data.paymentReference || 'Cash Payment'} isDark={isDark} mono />
+          <Field label="Payment Ref"    value={data.paymentReference || 'Walk-in Customer'} isDark={isDark} mono />
           <Field label="Channel"        value={data.registeredBy || 'Online Booking'} isDark={isDark} />
+          <Field label="Address" value={data.address || 'NIL'} isDark={isDark}/>
           <div style={{ gridColumn: '1 / -1' }}>
             <Field label="Room Number(s)" value={formatRoomNumbers(data.roomNumbers)} isDark={isDark} />
           </div>
