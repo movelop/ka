@@ -110,25 +110,19 @@ export const cancelRoomReservation = async (req, res, next) => {
       (r) => r._id.toString() === req.params.id
     );
 
-    const removableDates = roomNumber.unavailableDates.filter((d) =>
-      dates.some(
-        (date) => new Date(date).getTime() === new Date(d).getTime()
-      )
+    const incomingDates = dates.map(Number);
+
+    const updatedDates = roomNumber.unavailableDates.filter(
+      (d) => !incomingDates.includes(Number(d))
     );
 
-    if (!removableDates.length) {
-      return next(
-        createError(400, "None of the selected dates are reserved")
-      );
+    if (updatedDates.length === roomNumber.unavailableDates.length) {
+      return next(createError(400, "None of the selected dates are reserved"));
     }
 
     await Room.updateOne(
       { "roomNumbers._id": req.params.id },
-      {
-        $pull: {
-          "roomNumbers.$.unavailableDates": { $in: removableDates },
-        },
-      }
+      { $set: { "roomNumbers.$.unavailableDates": updatedDates } }
     );
 
     res.status(200).json({
