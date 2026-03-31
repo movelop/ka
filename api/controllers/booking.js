@@ -32,9 +32,7 @@ export const createBooking = async (req, res, next) => {
     if (
       !firstName ||
       !lastName ||
-      !email ||
       !phone ||
-      !identity ||
       !roomTitle ||
       !startDate ||
       !endDate ||
