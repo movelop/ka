@@ -29,19 +29,9 @@ export const createBooking = async (req, res, next) => {
       address
     } = req.body;
 
-    if (
-      !firstName ||
-      !lastName ||
-      !phone ||
-      !roomTitle ||
-      !startDate ||
-      !endDate ||
-      !price ||
-      !selectedRooms?.length
-    ) {
-      return next(createError(400, "Missing required booking fields"));
+    if (!firstName || !lastName || !phone || !price) {
+      return next(createError(400, "First name, last name, phone and price are required"));
     }
-
     // Generate unique confirmation code
     let confirmation;
     const existingCodes = await Booking.distinct("confirmation");
