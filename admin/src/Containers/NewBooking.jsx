@@ -105,6 +105,8 @@ const NewBooking = () => {
       selectedRooms,
       roomNumbers:   selectedRoomNumbers,
       price:         info.amount || totalPrice,
+      email:         info.email || `janedoe@yahoo.com`,
+      identity:      info.identity || 'NIL',
       checkedIn,
       registeredBy:  `${user.firstName} ${user.lastName}`,
     };
