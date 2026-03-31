@@ -16,7 +16,7 @@ const BookingReceipt = () => {
   const isDark  = currentMode === "Dark";
   const booking = location.state?.booking;
 
-  /* ── Admin shell tokens — same pattern as NewBooking ── */
+  /* ── Admin shell tokens ── */
   const c = {
     bg:      isDark ? "#2d3139" : "#ffffff",
     border:  isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
@@ -26,8 +26,12 @@ const BookingReceipt = () => {
   };
 
   /* ─────────────────────────────────────────────────────
-     Self-contained print HTML
-     All styles inlined — zero dependency on Tailwind / app CSS
+     THERMAL PRINT HTML
+     • Everything black, bold, no colour, no background tints
+     • Logo converted to black via CSS filter
+     • Wide letter-spacing removed — thermal fonts render better tight
+     • Thick solid dividers instead of faint rgba borders
+     • Font sizes bumped for readability on thermal roll
   ───────────────────────────────────────────────────── */
   const buildPrintHTML = (b, rows) => {
     const logoSrc = images?.logo || "";
@@ -40,81 +44,227 @@ const BookingReceipt = () => {
   <link href="${FONT_URL}" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: 'Jost', sans-serif;
       background: #fff;
+      color: #000;
       display: flex;
       justify-content: center;
-      padding: 48px 24px 64px;
-      color: #1a1a18;
+      padding: 24px 16px 48px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
+
     .card {
       width: 100%;
-      max-width: 640px;
-      background: #faf7f2;
-      border: 1px solid rgba(184,145,63,0.2);
-      padding: 2.5rem 3rem;
+      max-width: 380px;           /* typical 80mm thermal roll width */
+      background: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
     }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(to right, #b8913f, transparent);
+
+    /* ── Logo ── */
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      width: 100%;
     }
-    /* Logo */
-    .logo-wrap { display: flex; flex-direction: column; align-items: center; gap: .5rem; margin-bottom: 2rem; }
-    .logo-img  { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(184,145,63,0.3); }
-    .logo-img img { width: 100%; height: 100%; object-fit: cover; }
-    .logo-name { font-size: 10px; font-weight: 500; letter-spacing: .35em; text-transform: uppercase; color: #b8913f; }
-    /* Code */
-    .code-label { font-size: 10px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: rgba(26,26,24,.45); margin-bottom: .4rem; }
-    .code-value { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 38px; letter-spacing: .12em; color: #1a1a18; margin-bottom: 2rem; }
-    /* Rows */
+    .logo-img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #000;     /* solid black ring */
+    }
+    .logo-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%) contrast(200%) brightness(0); /* force black */
+    }
+    .logo-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #000;
+    }
+    .hotel-tagline {
+      font-size: 10px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Top / bottom rules ── */
+    .rule {
+      width: 100%;
+      border: none;
+      border-top: 2px solid #000;
+      margin: 10px 0;
+    }
+    .rule-dashed {
+      width: 100%;
+      border: none;
+      border-top: 1px dashed #000;
+      margin: 8px 0;
+    }
+
+    /* ── Confirmation code ── */
+    .code-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #000;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .code-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700;
+      font-size: 34px;
+      letter-spacing: 0.08em;
+      color: #000;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    /* ── Checked-in badge ── */
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #000;
+      border: 1.5px solid #000;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+    }
+
+    /* ── Detail rows ── */
     .rows { width: 100%; }
-    .row { display: flex; justify-content: space-between; align-items: baseline; width: 100%; padding: .65rem 0; border-bottom: 1px solid rgba(26,26,24,.06); gap: 1rem; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+      padding: 5px 0;
+      border-bottom: 1px dashed #000;
+      gap: 8px;
+    }
     .row:last-child { border-bottom: none; }
-    .row-label { font-size: 10px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: rgba(26,26,24,.45); flex-shrink: 0; }
-    .row-value { font-size: 13px; font-weight: 400; color: #1a1a18; text-align: right; }
-    /* Alerts */
-    .alert { width: 100%; margin-top: 1rem; padding: .75rem 1rem; background: rgba(175,45,45,.06); border-left: 2px solid #b94a48; font-size: 12px; font-weight: 300; color: #b94a48; line-height: 1.6; }
-    .alert + .alert { margin-top: .5rem; }
-    /* Checked-in badge */
-    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #b8913f; margin-bottom: 1.5rem; }
+    .row-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #000;
+      flex-shrink: 0;
+    }
+    .row-value {
+      font-size: 11px;
+      font-weight: 700;
+      color: #000;
+      text-align: right;
+    }
+
+    /* ── Total row ── */
+    .row-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+      padding: 8px 0 4px;
+      gap: 8px;
+    }
+    .row-total .row-label { font-size: 12px; font-weight: 700; }
+    .row-total .row-value { font-size: 14px; font-weight: 700; }
+
+    /* ── Alerts ── */
+    .alert {
+      width: 100%;
+      margin-top: 8px;
+      padding: 6px 8px;
+      border: 1.5px solid #000;
+      font-size: 10px;
+      font-weight: 700;
+      color: #000;
+      line-height: 1.5;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 14px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #000;
+      text-align: center;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Print overrides ── */
     @media print {
       body { padding: 0; }
-      .card { border: none; background: #fff; }
-      .card::before { display: none; }
-      .row { padding: .4rem 0; }
+      .card { max-width: 100%; }
     }
   </style>
 </head>
 <body>
   <div class="card">
+
+    <!-- Logo -->
     <div class="logo-wrap">
-      <div class="logo-img"><img src="${logoSrc}" alt="K.A Hotel and Suites"/></div>
+      <div class="logo-img">
+        <img src="${logoSrc}" alt="K.A Hotel and Suites"/>
+      </div>
       <span class="logo-name">K.A Hotel &amp; Suites</span>
+      <span class="hotel-tagline">Official Booking Receipt</span>
     </div>
 
-    ${b.checkedIn ? `<span class="badge">✓ Checked In</span>` : ""}
+    <hr class="rule"/>
 
+    <!-- Confirmation code -->
     <p class="code-label">Confirmation Code</p>
     <p class="code-value">${b.confirmation || "—"}</p>
 
+    ${b.checkedIn ? `<span class="badge">✓ Checked In</span>` : ""}
+
+    <hr class="rule-dashed"/>
+
+    <!-- Detail rows (all except total) -->
     <div class="rows">
-      ${rows.map(({ label, value }) => `
+      ${rows.slice(0, -1).map(({ label, value }) => `
         <div class="row">
           <span class="row-label">${label}</span>
           <span class="row-value">${value ?? "—"}</span>
         </div>`).join("")}
     </div>
 
+    <hr class="rule"/>
+
+    <!-- Total row separated -->
+    <div class="row-total">
+      <span class="row-label">${rows[rows.length - 1].label}</span>
+      <span class="row-value">${rows[rows.length - 1].value}</span>
+    </div>
+
+    <hr class="rule"/>
+
+    <!-- Alerts -->
     <div class="alert">⚠ Damage to any hotel property will be charged to the room occupant.</div>
     <div class="alert">Reservations with "non-arrival" will be forfeited if not cancelled at least 24 hours prior to the check-in date.</div>
+
+    <!-- Footer -->
+    <hr class="rule-dashed"/>
+    <p class="footer">Thank you for choosing K.A Hotel &amp; Suites</p>
+
   </div>
 </body>
 </html>`;
@@ -126,8 +276,7 @@ const BookingReceipt = () => {
       <div style={{
         margin: "1.5rem", marginTop: "6rem",
         padding: "3rem", borderRadius: "20px",
-        border: `1px solid ${c.border}`,
-        background: c.bg,
+        border: `1px solid ${c.border}`, background: c.bg,
         display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem",
       }}>
         <p style={{ fontSize: "14px", color: c.muted }}>No booking data found.</p>
@@ -154,20 +303,20 @@ const BookingReceipt = () => {
     { label: "Email",             value: booking.email },
     { label: "Phone",             value: booking.phone },
     { label: "ID Number",         value: booking.identity || "—" },
-    { label: "Payment Reference", value: booking.paymentReference || "Cash" },
+    { label: "Payment Ref",       value: booking.paymentReference || "Cash" },
     { label: "Room Type",         value: booking.roomTitle },
     { label: "Adults",            value: booking.adults },
     { label: "Children",          value: booking.children },
     { label: "Night(s)",          value: days },
     { label: "Check-in",          value: formatDate(booking.startDate) },
     { label: "Check-out",         value: formatDate(booking.endDate) },
-    { label: "Total Amount",      value: `₦${Number(booking.price).toLocaleString()}` },
+    { label: "Total Amount",      value: `NGN ${Number(booking.price).toLocaleString()}` }, // ₦ may not render on thermal
   ];
 
-  /* ── Print: fully self-contained new window ── */
+  /* ── Print handler ── */
   const handlePrint = () => {
     const html = buildPrintHTML(booking, rows);
-    const win  = window.open("", "_blank", "width=780,height=950");
+    const win  = window.open("", "_blank", "width=500,height=900");
     win.document.write(html);
     win.document.close();
     win.focus();
@@ -175,7 +324,7 @@ const BookingReceipt = () => {
     setTimeout(() => { if (!win.closed) { win.print(); win.close(); } }, 1800);
   };
 
-  /* ── Shared button style (matches admin) ── */
+  /* ── Admin button styles ── */
   const ghostBtn = {
     display: "inline-flex", alignItems: "center", gap: "6px",
     padding: "9px 20px", borderRadius: "10px",
@@ -193,38 +342,19 @@ const BookingReceipt = () => {
     transition: "opacity 0.15s",
   };
 
-  /* ── Receipt card row (preview) ── */
-  const PreviewRow = ({ label, value }) => (
-    <div style={{
-      display: "flex", justifyContent: "space-between", alignItems: "baseline",
-      width: "100%", padding: "0.65rem 0",
-      borderBottom: "1px solid rgba(26,26,24,0.06)",
-      gap: "1rem",
-    }}>
-      <span style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(26,26,24,0.45)", flexShrink: 0 }}>
-        {label}
-      </span>
-      <span style={{ fontSize: "13px", fontWeight: 400, color: "#1a1a18", textAlign: "right" }}>
-        {value ?? "—"}
-      </span>
-    </div>
-  );
-
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link href={FONT_URL} rel="stylesheet" />
 
-      {/* ── Admin shell wrapper — same margin/radius as NewBooking ── */}
+      {/* ── Admin shell — same wrapper as NewBooking ── */}
       <div style={{
         margin: "1.5rem", marginTop: "6rem",
-        padding: "2rem",
-        background: c.bg,
-        borderRadius: "20px",
-        border: `1px solid ${c.border}`,
+        padding: "2rem", background: c.bg,
+        borderRadius: "20px", border: `1px solid ${c.border}`,
       }}>
 
-        {/* Header row */}
+        {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "2rem" }}>
           <div>
             <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: c.muted, marginBottom: "4px" }}>
@@ -236,34 +366,25 @@ const BookingReceipt = () => {
           </div>
 
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <button
-              onClick={() => navigate("/bookings")}
-              style={ghostBtn}
+            <button onClick={() => navigate("/bookings")} style={ghostBtn}
               onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-            >
+              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}>
               <MdArrowBack style={{ fontSize: "16px" }} /> Bookings
             </button>
-            <button
-              onClick={handlePrint}
-              style={ghostBtn}
+            <button onClick={handlePrint} style={ghostBtn}
               onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-            >
+              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}>
               <BsPrinterFill style={{ fontSize: "14px" }} /> Print
             </button>
-            <button
-              onClick={handlePrint}
-              style={primaryBtn}
+            <button onClick={handlePrint} style={primaryBtn}
               onMouseEnter={(e) => e.currentTarget.style.opacity = "0.9"}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-            >
+              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}>
               <MdDownload style={{ fontSize: "16px" }} /> Download PDF
             </button>
           </div>
         </div>
 
-        {/* ── Receipt preview ── */}
+        {/* ── On-screen receipt preview (luxury design unchanged) ── */}
         <div style={{ display: "flex", justifyContent: "center" }}>
           <div style={{
             width: "100%", maxWidth: "640px",
@@ -271,8 +392,7 @@ const BookingReceipt = () => {
             border: "1px solid rgba(184,145,63,0.2)",
             padding: "2.5rem 3rem",
             display: "flex", flexDirection: "column", alignItems: "center",
-            position: "relative",
-            fontFamily: "'Jost', sans-serif",
+            position: "relative", fontFamily: "'Jost', sans-serif",
           }}>
 
             {/* Gold top bar */}
@@ -306,14 +426,11 @@ const BookingReceipt = () => {
             {/* Detail rows */}
             <div style={{ width: "100%" }}>
               {rows.map(({ label, value }, i) => (
-                <div
-                  key={label}
-                  style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "baseline",
-                    width: "100%", padding: "0.65rem 0", gap: "1rem",
-                    borderBottom: i < rows.length - 1 ? "1px solid rgba(26,26,24,0.06)" : "none",
-                  }}
-                >
+                <div key={label} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "baseline",
+                  width: "100%", padding: "0.65rem 0", gap: "1rem",
+                  borderBottom: i < rows.length - 1 ? "1px solid rgba(26,26,24,0.06)" : "none",
+                }}>
                   <span style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(26,26,24,0.45)", flexShrink: 0 }}>
                     {label}
                   </span>
@@ -341,7 +458,7 @@ const BookingReceipt = () => {
               </div>
             ))}
 
-            {/* Card action buttons — same style as Confirmation.css .cButton */}
+            {/* Card action buttons */}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", width: "100%", marginTop: "2rem" }}>
               {[
                 { label: "Print",  icon: <BsPrinterFill />, action: handlePrint },
@@ -369,15 +486,7 @@ const BookingReceipt = () => {
                     e.currentTarget.querySelector(".fill").style.transform = "translateX(-100%)";
                   }}
                 >
-                  <span
-                    className="fill"
-                    style={{
-                      position: "absolute", inset: 0,
-                      background: "#1a1a18",
-                      transform: "translateX(-100%)",
-                      transition: "transform 0.35s cubic-bezier(0.76,0,0.24,1)",
-                    }}
-                  />
+                  <span className="fill" style={{ position: "absolute", inset: 0, background: "#1a1a18", transform: "translateX(-100%)", transition: "transform 0.35s cubic-bezier(0.76,0,0.24,1)" }} />
                   <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     {icon}{label}
                   </span>
