@@ -183,7 +183,7 @@ const TableData = () => {
                 {row.paymentReference}
               </span>
             ) : (
-              <Badge variant="green">Cash</Badge>
+              <Badge variant="green">Transfer</Badge>
             )}
 
             {/* Room type */}
