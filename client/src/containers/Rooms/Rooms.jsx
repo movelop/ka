@@ -23,12 +23,14 @@ const Rooms = () => {
       <div className="rooms">
         <div className="roomsContainer">
           {loading ? (
-            <Loading text="Loading rooms…" />
-          ) : (
-            data?.rooms?.map((item) => (
-              <RoomDetails key={item._id} item={item} />
-            ))
-          )}
+              <Loading text="Loading rooms…" />
+            ) : (
+              data?.rooms
+                ?.filter((item) => item.title !== "BQ")
+                .map((item) => (
+                  <RoomDetails key={item._id} item={item} />
+                ))
+            )}
         </div>
       </div>
 

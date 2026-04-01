@@ -120,9 +120,11 @@ const Booking = () => {
           {loading ? (
             <Loading />
           ) : (
-            data?.rooms?.map((room) => (
-              <Availability room={room} key={room._id} />
-            ))
+            data?.rooms
+              ?.filter((room) => room.title !== "BQ")
+              .map((room) => (
+                <Availability room={room} key={room._id} />
+              ))
           )}
         </div>
 
