@@ -184,6 +184,10 @@
   color: var(--primary-color, #1a1a18);
 }
 
+.availabilityButton a {
+   color: var(--primary-color, #1a1a18);
+}
+
 .availabilityButton::before {
   content: '';
   position: absolute;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { HiLocationMarker } from 'react-icons/hi';
 import { TbCurrencyNaira } from 'react-icons/tb';
-import { useNavigate } from 'react-router-dom';
 
 import './Availability.css';
 import { SearchContext } from '../../contexts/SearchContext';
@@ -9,7 +8,6 @@ import { SearchContext } from '../../contexts/SearchContext';
 const Availability = ({ room }) => {
   const [availableRooms, setAvailableRooms] = useState([]);
   const { dates, options } = useContext(SearchContext);
-  const navigate = useNavigate();
   const isAvailable = availableRooms.length > 0;
 
   useEffect(() => {
@@ -54,13 +52,7 @@ const Availability = ({ room }) => {
   const days = dayDifference(dates[0].endDate, dates[0].startDate);
   const totalPrice = days * options.rooms * room.price;
 
-  const handleBooking = () => {
-    const bookingData = { dates, options, days, totalPrice, room };
-
-    localStorage.setItem("bookingData", JSON.stringify(bookingData));
-
-    navigate('/booking/checkout', { state: bookingData });
-  };
+  const whatsappMessage = `Hello, I'd like to book the *${room.title}* room for ${days} night(s) from ${new Date(dates[0].startDate).toDateString()} to ${new Date(dates[0].endDate).toDateString()}. Total: ₦${totalPrice.toLocaleString('en-US')}`;
 
   return (
     <div className="availabilityCard">
@@ -115,9 +107,15 @@ const Availability = ({ room }) => {
         {isAvailable ? (
           <button
             className="availabilityButton"
-            onClick={handleBooking}
+          >
+             <a
+            href={`https://wa.me/2348163140615?text=Hello%20I%20would%20like%20to%20make%20an%20enquiry%20about%20your%20services`}
+            target="_blank"
+            rel="noopener noreferrer"
+            
           >
             <span>Book</span>
+          </a>
           </button>
         ) : (
           <button
