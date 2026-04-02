@@ -55,7 +55,7 @@ export const testimonials = [
     {
         name: 'Alhaja',
         title: 'A truly outstanding experience!',
-        testimony: `A truly outstanding experience! My husband and I had a fabulous 5 nights staying at D'Czars Hotel, I cannot recommend this hotel enough! And the hotels.ng website is just great, so easy to use! If I were to recommend a hotel website for anyone it’d be this one!`
+        testimony: `A truly outstanding experience! My husband and I had a fabulous 5 nights staying at K.A Hotel, I cannot recommend this hotel enough! And the hotels.ng website is just great, so easy to use! If I were to recommend a hotel website for anyone it’d be this one!`
     },
 ];
 
