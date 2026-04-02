@@ -122,6 +122,14 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+app.get("/debug", (req, res) => {
+  res.json({
+    CLIENT_URL: process.env.CLIENT_URL,
+    MONGO_URI: process.env.MONGO_URI ? "set" : "missing",
+    NODE_ENV: process.env.NODE_ENV,
+    allowedOrigins,
+  });
+});
 
 app.use("/api/auth", authRoute);
 app.use("/api/facilities", facilityRoute);
