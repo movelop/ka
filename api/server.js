@@ -57,14 +57,7 @@ mongoose.connection.on("error", (err) => {
   console.error("MongoDB connection error:", err.message);
 });
 
-// ─── Security Middlewares ─────────────────────────────────────────────────────
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
-);
-
+// ─── CORS — must be first ─────────────────────────────────────────────────────
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -74,7 +67,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server requests (no origin) and listed origins
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -82,6 +74,14 @@ app.use(
       }
     },
     credentials: true,
+  })
+);
+
+// ─── Security Middlewares ─────────────────────────────────────────────────────
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
