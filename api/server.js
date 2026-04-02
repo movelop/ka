@@ -68,8 +68,8 @@ app.use(
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  process.env.CLIENT_URL, // set in .env for production, e.g. https://yourapp.com
-].filter(Boolean); // removes undefined if CLIENT_URL is not set
+  ...(process.env.CLIENT_URL?.split(",").map((url) => url.trim()) || []),
+].filter(Boolean);
 
 app.use(
   cors({
