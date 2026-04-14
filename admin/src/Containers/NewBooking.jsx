@@ -78,11 +78,24 @@ const NewBooking = () => {
     setSelectedRooms((prev)       => checked ? [...prev, value] : prev.filter((id) => id !== value));
     setSelectedRoomNumbers((prev) => checked ? [...prev, name]  : prev.filter((n)  => n  !== name));
   };
+
   const isRoomAvailable = (roomNumber) => {
-    const startTime   = dates[0].startDate.getTime();
-    const endTime     = dates[0].endDate.getTime();
-    const unavailable = roomNumber.unavailableDates.map((d) => new Date(d).getTime());
-    return !unavailable.some((date) => date >= startTime && date <= endTime);
+    const startTime    = dates[0].startDate.getTime();
+    const endTime      = dates[0].endDate.getTime();
+    const endtimeNoon  = new Date(endTime).setHours(12, 0, 0, 0);
+    const endDateNoon  = new Date(endtimeNoon).getTime();
+
+    const unavailable = roomNumber.unavailableDates.map((d) => {
+      const unavailableTime = new Date(d).getTime();
+      return new Date(unavailableTime).setHours(12, 0, 0, 0);
+    });
+
+    return !unavailable.some((checkoutTime) => {
+      return (
+        (checkoutTime >= startTime && checkoutTime < endTime) ||
+        (checkoutTime >= endTime   && checkoutTime < endDateNoon)
+      );
+    });
   };
 
   const days       = Math.ceil((dates[0].endDate - dates[0].startDate) / (1000 * 60 * 60 * 24));
@@ -112,7 +125,6 @@ const NewBooking = () => {
     };
 
     try {
-      /* 1. Block unavailable dates on each selected room */
       await Promise.all(
         selectedRooms.map((roomId) =>
           api.put(`/rooms/availability/${roomId}`, {
@@ -121,18 +133,15 @@ const NewBooking = () => {
         )
       );
 
-      /* 2. Create booking — capture full server response */
-      const res     = await api.post("/bookings", bookingData);
-      const saved   = res.data?.booking || res.data; // adjust to your API shape
+      const res   = await api.post("/bookings", bookingData);
+      const saved = res.data?.booking || res.data;
 
-      /* 3. Navigate to receipt, passing the server-returned booking */
       navigate("/bookings/receipt", {
         state: {
           booking: {
             ...bookingData,
-            // Prefer server values; fall back to local ones
             _id:          saved?._id,
-            confirmation: saved?.confirmation,   // ← from server
+            confirmation: saved?.confirmation,
             roomNumbers:  saved?.roomNumbers || selectedRoomNumbers,
             price:        saved?.price       || bookingData.price,
           },

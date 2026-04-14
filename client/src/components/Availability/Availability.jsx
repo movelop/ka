@@ -16,12 +16,12 @@ const Availability = ({ room }) => {
     room?.roomNumbers.forEach((item) => {
       const endTime = new Date(dates[0].endDate).getTime();
       const startTime = new Date(dates[0].startDate).getTime();
-      const endtimeNoon = new Date(endTime).setHours(13, 0, 0, 0);
+      const endtimeNoon = new Date(endTime).setHours(12, 0, 0, 0);
       const endDateAfternoon = new Date(endtimeNoon).getTime();
 
       const updatedUnavailableDates = item.unavailableDates.map((date) => {
         const unavailableTime = new Date(date).getTime();
-        const checkoutTime = new Date(unavailableTime).setHours(12, 59, 59, 0);
+        const checkoutTime = new Date(unavailableTime).setHours(12, 0, 0, 0);
         return checkoutTime;
       });
 
@@ -105,17 +105,14 @@ const Availability = ({ room }) => {
         </div>
 
         {isAvailable ? (
-          <button
-            className="availabilityButton"
-          >
-             <a
-            href={`https://wa.me/2348163140615?text=Hello%20I%20would%20like%20to%20make%20an%20enquiry%20about%20your%20services`}
-            target="_blank"
-            rel="noopener noreferrer"
-            
-          >
-            <span>Book</span>
-          </a>
+          <button className="availabilityButton">
+            <a
+              href={`https://wa.me/2348163140615?text=Hello%20I%20would%20like%20to%20make%20an%20enquiry%20about%20your%20services`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>Book</span>
+            </a>
           </button>
         ) : (
           <button
