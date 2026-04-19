@@ -3,7 +3,7 @@ import api from "../hooks/api";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
-import { Checkbox, FormControlLabel, TextField } from "@mui/material";
+import { Checkbox, FormControlLabel } from "@mui/material";
 import { userInputs } from "../Data/formsource";
 import { AuthContext } from "../context/AuthContextProvider";
 import { useStateContext } from "../context/ContextProvider";
@@ -19,6 +19,7 @@ const EditUser = ({ item, setEdit }) => {
   const [file, setFile] = useState(null);
   const [existingImage, setExistingImage] = useState("");
   const [preview, setPreview] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const c = {
     bg:      isDark ? "#2d3139" : "#ffffff",
@@ -74,6 +75,7 @@ const EditUser = ({ item, setEdit }) => {
   /* ── Submit ── */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsProcessing(true);
     try {
       let imageUrl = existingImage;
       if (file) {
@@ -99,6 +101,7 @@ const EditUser = ({ item, setEdit }) => {
       setEdit(false);
     } catch (err) {
       console.error("Update failed:", err);
+      setIsProcessing(false);
     }
   };
 
@@ -149,17 +152,19 @@ const EditUser = ({ item, setEdit }) => {
                 <button
                   type="button"
                   onClick={preview ? removePreview : removeExistingImage}
+                  disabled={isProcessing}
                   style={{
                     position: 'absolute', top: '10px', right: '10px',
                     width: '28px', height: '28px', borderRadius: '50%',
                     background: 'rgba(239,68,68,0.9)', color: '#fff',
-                    border: 'none', cursor: 'pointer',
+                    border: 'none', cursor: isProcessing ? 'not-allowed' : 'pointer',
                     fontSize: '12px', fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'background 0.15s',
+                    opacity: isProcessing ? 0.6 : 1,
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(220,38,38,1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.9)'}
+                  onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.background = 'rgba(220,38,38,1)')}
+                  onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.background = 'rgba(239,68,68,0.9)')}
                   aria-label="Remove image"
                 >
                   ✕
@@ -170,7 +175,8 @@ const EditUser = ({ item, setEdit }) => {
                 width: '100%', height: '100%',
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                gap: '8px', cursor: 'pointer', color: c.muted,
+                gap: '8px', cursor: isProcessing ? 'not-allowed' : 'pointer', color: c.muted,
+                opacity: isProcessing ? 0.6 : 1,
               }}>
                 <DriveFolderUploadOutlinedIcon style={{ fontSize: '2rem', color: currentColor }} />
                 <span style={{ fontSize: '12px', fontWeight: 500 }}>Upload photo</span>
@@ -184,21 +190,23 @@ const EditUser = ({ item, setEdit }) => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: '6px', marginTop: '12px',
               fontSize: '12px', fontWeight: 600,
-              color: currentColor, cursor: 'pointer',
+              color: currentColor, cursor: isProcessing ? 'not-allowed' : 'pointer',
               padding: '7px 14px', borderRadius: '8px',
               border: `1px solid ${currentColor}40`,
               background: `${currentColor}10`,
               transition: 'background 0.15s',
+              opacity: isProcessing ? 0.6 : 1,
+              pointerEvents: isProcessing ? 'none' : 'auto',
             }}
-              onMouseEnter={(e) => e.currentTarget.style.background = `${currentColor}20`}
-              onMouseLeave={(e) => e.currentTarget.style.background = `${currentColor}10`}
+              onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.background = `${currentColor}20`)}
+              onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.background = `${currentColor}10`)}
             >
               <DriveFolderUploadOutlinedIcon style={{ fontSize: '15px' }} />
               Replace photo
             </label>
           )}
 
-          <input type="file" id="file" onChange={handleFileSelect} hidden />
+          <input type="file" id="file" onChange={handleFileSelect} hidden disabled={isProcessing} />
         </div>
 
         {/* ── Form ── */}
@@ -225,6 +233,7 @@ const EditUser = ({ item, setEdit }) => {
                       type={input.type}
                       value={info[id] || ""}
                       onChange={handleChange}
+                      disabled={isProcessing}
                       style={{
                         height: '40px', padding: '0 14px',
                         fontSize: '13px', borderRadius: '10px',
@@ -232,10 +241,14 @@ const EditUser = ({ item, setEdit }) => {
                         background: c.inputBg, color: c.text,
                         outline: 'none',
                         transition: 'border-color 0.15s, box-shadow 0.15s',
+                        opacity: isProcessing ? 0.6 : 1,
+                        cursor: isProcessing ? 'not-allowed' : 'text',
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = currentColor;
-                        e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+                        if (!isProcessing) {
+                          e.target.style.borderColor = currentColor;
+                          e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+                        }
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = c.border;
@@ -253,6 +266,7 @@ const EditUser = ({ item, setEdit }) => {
                 padding: '12px 16px', borderRadius: '12px',
                 border: `1px solid ${c.border}`,
                 background: c.surface,
+                opacity: isProcessing ? 0.6 : 1,
               }}>
                 <div>
                   <p style={{ fontSize: '13px', fontWeight: 600, color: c.text, margin: 0 }}>
@@ -269,6 +283,7 @@ const EditUser = ({ item, setEdit }) => {
                     <Checkbox
                       checked={isAdmin}
                       onChange={handleAdminChange}
+                      disabled={isProcessing}
                       sx={{
                         color: c.muted,
                         '&.Mui-checked': { color: currentColor },
@@ -282,21 +297,38 @@ const EditUser = ({ item, setEdit }) => {
               <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button
                   type="submit"
+                  disabled={isProcessing}
                   style={{
                     padding: '10px 28px', borderRadius: '10px',
                     background: currentColor, color: '#fff',
                     fontSize: '13px', fontWeight: 600,
-                    border: 'none', cursor: 'pointer',
+                    border: 'none', cursor: isProcessing ? 'not-allowed' : 'pointer',
                     boxShadow: `0 4px 14px ${currentColor}40`,
                     transition: 'opacity 0.15s, transform 0.15s',
+                    opacity: isProcessing ? 0.7 : 1,
+                    display: 'flex', alignItems: 'center', gap: '8px',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
-                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.opacity = '1')}
+                  onMouseDown={(e) => !isProcessing && (e.currentTarget.style.transform = 'scale(0.97)')}
+                  onMouseUp={(e) => !isProcessing && (e.currentTarget.style.transform = 'scale(1)')}
                 >
-                  Save Changes
+                  {isProcessing ? (
+                    <>
+                      <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
+                {isProcessing && (
+                  <style>{`
+                    @keyframes spin {
+                      to { transform: rotate(360deg); }
+                    }
+                  `}</style>
+                )}
               </div>
 
             </div>

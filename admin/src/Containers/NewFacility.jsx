@@ -11,6 +11,7 @@ const NewFacility = () => {
   const [file, setFile]       = useState(null);
   const [preview, setPreview] = useState("");
   const [info, setInfo]       = useState({});
+  const [isProcessing, setIsProcessing] = useState(false);
   const navigate              = useNavigate();
   const { user }              = useContext(AuthContext);
   const { currentColor, currentMode } = useStateContext();
@@ -39,6 +40,7 @@ const NewFacility = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsProcessing(true);
     try {
       let imageUrl = "";
       if (file) {
@@ -56,6 +58,7 @@ const NewFacility = () => {
       navigate('/facilities');
     } catch (err) {
       console.error(err);
+      setIsProcessing(false);
     }
   };
 
@@ -104,17 +107,18 @@ const NewFacility = () => {
               <button
                 type="button"
                 onClick={handleRemoveFile}
+                disabled={isProcessing}
                 style={{
                   position: 'absolute', top: '10px', right: '10px',
                   width: '28px', height: '28px', borderRadius: '50%',
                   background: 'rgba(239,68,68,0.9)', color: '#fff',
-                  border: 'none', cursor: 'pointer',
+                  border: 'none', cursor: isProcessing ? 'not-allowed' : 'pointer',
                   fontSize: '12px', fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'background 0.15s',
+                  transition: 'background 0.15s', opacity: isProcessing ? 0.6 : 1,
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(220,38,38,1)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.9)'}
+                onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.background = 'rgba(220,38,38,1)')}
+                onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.background = 'rgba(239,68,68,0.9)')}
                 aria-label="Remove image"
               >
                 ✕
@@ -125,7 +129,8 @@ const NewFacility = () => {
               width: '100%', height: '100%',
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
-              gap: '8px', cursor: 'pointer', color: c.muted,
+              gap: '8px', cursor: isProcessing ? 'not-allowed' : 'pointer', color: c.muted,
+              opacity: isProcessing ? 0.6 : 1,
             }}>
               <DriveFolderUploadOutlinedIcon style={{ fontSize: '2.5rem', color: currentColor, opacity: 0.7 }} />
               <span style={{ fontSize: '12px', fontWeight: 500 }}>Upload facility image</span>
@@ -139,21 +144,23 @@ const NewFacility = () => {
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             alignSelf: 'flex-start',
             fontSize: '12px', fontWeight: 600,
-            color: currentColor, cursor: 'pointer',
+            color: currentColor, cursor: isProcessing ? 'not-allowed' : 'pointer',
             padding: '7px 14px', borderRadius: '8px',
             border: `1px solid ${currentColor}40`,
             background: `${currentColor}10`,
             transition: 'background 0.15s',
+            opacity: isProcessing ? 0.6 : 1,
+            pointerEvents: isProcessing ? 'none' : 'auto',
           }}
-            onMouseEnter={(e) => e.currentTarget.style.background = `${currentColor}20`}
-            onMouseLeave={(e) => e.currentTarget.style.background = `${currentColor}10`}
+            onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.background = `${currentColor}20`)}
+            onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.background = `${currentColor}10`)}
           >
             <DriveFolderUploadOutlinedIcon style={{ fontSize: '15px' }} />
             Replace image
           </label>
         )}
 
-        <input type="file" id="file" onChange={handleFileSelect} style={{ display: 'none' }} />
+        <input type="file" id="file" onChange={handleFileSelect} style={{ display: 'none' }} disabled={isProcessing} />
 
         {/* Title input */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -170,6 +177,7 @@ const NewFacility = () => {
             placeholder={facilityInput.placeholder}
             value={info[facilityInput.id] || ''}
             onChange={handleChange}
+            disabled={isProcessing}
             style={{
               height: '42px', padding: '0 14px',
               fontSize: '13px', borderRadius: '10px',
@@ -177,10 +185,14 @@ const NewFacility = () => {
               background: c.inputBg, color: c.text,
               outline: 'none',
               transition: 'border-color 0.15s, box-shadow 0.15s',
+              opacity: isProcessing ? 0.6 : 1,
+              cursor: isProcessing ? 'not-allowed' : 'text',
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = currentColor;
-              e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+              if (!isProcessing) {
+                e.target.style.borderColor = currentColor;
+                e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`;
+              }
             }}
             onBlur={(e) => {
               e.target.style.borderColor = c.border;
@@ -193,21 +205,38 @@ const NewFacility = () => {
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             type="submit"
+            disabled={isProcessing}
             style={{
               padding: '10px 28px', borderRadius: '10px',
               background: currentColor, color: '#fff',
               fontSize: '13px', fontWeight: 600,
-              border: 'none', cursor: 'pointer',
+              border: 'none', cursor: isProcessing ? 'not-allowed' : 'pointer',
               boxShadow: `0 4px 14px ${currentColor}40`,
               transition: 'opacity 0.15s, transform 0.15s',
+              opacity: isProcessing ? 0.7 : 1,
+              display: 'flex', alignItems: 'center', gap: '8px',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
-            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.opacity = '1')}
+            onMouseDown={(e) => !isProcessing && (e.currentTarget.style.transform = 'scale(0.97)')}
+            onMouseUp={(e) => !isProcessing && (e.currentTarget.style.transform = 'scale(1)')}
           >
-            Add Facility
+            {isProcessing ? (
+              <>
+                <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                Uploading...
+              </>
+            ) : (
+              'Add Facility'
+            )}
           </button>
+          {isProcessing && (
+            <style>{`
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+            `}</style>
+          )}
         </div>
 
       </form>

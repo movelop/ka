@@ -44,6 +44,7 @@ const NewBooking = () => {
   const [datePickerOpen, setDatePickerOpen]           = useState(false);
   const [error, setError]                             = useState(false);
   const [msg, setMsg]                                 = useState("");
+  const [isProcessing, setIsProcessing]               = useState(false);
 
   const { data } = useFetch("/rooms");
 
@@ -107,6 +108,8 @@ const NewBooking = () => {
       setMsg(`Please select exactly ${options.rooms} room(s).`);
       return setError(true);
     }
+
+    setIsProcessing(true);
     const bookingData = {
       ...info,
       roomTitle:     room.title,
@@ -150,6 +153,7 @@ const NewBooking = () => {
     } catch (err) {
       setMsg("Error creating booking. Please try again.");
       setError(true);
+      setIsProcessing(false);
     }
   };
 
@@ -302,7 +306,7 @@ const NewBooking = () => {
             {bookingInputs.map((input) => (
               <div key={input.id} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <label htmlFor={input.id} style={labelStyle}>{input.label}</label>
-                <input id={input.id} type={input.type} placeholder={input.placeholder} onChange={handleChange} style={inputStyle} onFocus={focusInput} onBlur={blurInput} />
+                <input id={input.id} type={input.type} placeholder={input.placeholder} onChange={handleChange} style={inputStyle} onFocus={focusInput} onBlur={blurInput} disabled={isProcessing} />
               </div>
             ))}
           </div>
@@ -313,22 +317,36 @@ const NewBooking = () => {
               <p style={{ fontSize: "13px", fontWeight: 600, color: c.text, margin: 0 }}>Checked In</p>
               <p style={{ fontSize: "11px", color: c.muted, margin: "2px 0 0" }}>Mark guest as already checked in</p>
             </div>
-            <button type="button" onClick={() => setCheckedIn((prev) => !prev)} role="switch" aria-checked={checkedIn}
-              style={{ width: "44px", height: "24px", borderRadius: "99px", border: "none", cursor: "pointer", flexShrink: 0, background: checkedIn ? currentColor : isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", position: "relative", transition: "background 0.2s" }}>
+            <button type="button" onClick={() => setCheckedIn((prev) => !prev)} role="switch" aria-checked={checkedIn} disabled={isProcessing}
+              style={{ width: "44px", height: "24px", borderRadius: "99px", border: "none", cursor: isProcessing ? "not-allowed" : "pointer", flexShrink: 0, background: checkedIn ? currentColor : isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", position: "relative", transition: "background 0.2s", opacity: isProcessing ? 0.6 : 1 }}>
               <span style={{ position: "absolute", top: "3px", left: checkedIn ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
             </button>
           </div>
 
           {/* Submit */}
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button type="submit"
-              style={{ padding: "10px 32px", borderRadius: "10px", background: currentColor, color: "#fff", fontSize: "13px", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: `0 4px 14px ${currentColor}40`, transition: "opacity 0.15s, transform 0.15s" }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = "0.9"}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-              onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.97)"}
-              onMouseUp={(e)   => e.currentTarget.style.transform = "scale(1)"}>
-              Book Now
+            <button type="submit" disabled={isProcessing}
+              style={{ padding: "10px 32px", borderRadius: "10px", background: currentColor, color: "#fff", fontSize: "13px", fontWeight: 600, border: "none", cursor: isProcessing ? "not-allowed" : "pointer", boxShadow: `0 4px 14px ${currentColor}40`, transition: "opacity 0.15s, transform 0.15s", opacity: isProcessing ? 0.7 : 1, display: "flex", alignItems: "center", gap: "8px" }}
+              onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.opacity = "0.9")}
+              onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.opacity = "1")}
+              onMouseDown={(e) => !isProcessing && (e.currentTarget.style.transform = "scale(0.97)")}
+              onMouseUp={(e)   => !isProcessing && (e.currentTarget.style.transform = "scale(1)")}>
+              {isProcessing ? (
+                <>
+                  <div style={{ width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
+                  Processing...
+                </>
+              ) : (
+                "Book Now"
+              )}
             </button>
+            {isProcessing && (
+              <style>{`
+                @keyframes spin {
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+            )}
           </div>
 
         </form>
