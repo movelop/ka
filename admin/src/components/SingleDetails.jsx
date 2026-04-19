@@ -209,6 +209,7 @@ const SingleDetails = ({ type, data, img }) => {
           <Field label="Check-out"      value={formatDate(data.endDate)}   isDark={isDark} />
           <Field label="Payment Ref"    value={data.paymentReference || 'Walk-in Customer (Transfer)'} isDark={isDark} mono />
           <Field label="Channel"        value={data.registeredBy || 'Online Booking'} isDark={isDark} />
+          <Field label="time registered" value={new Date(data.createdAt).toLocaleTimeString()} isDark={isDark} />
           <Field label="Address" value={data.address || 'NIL'} isDark={isDark}/>
           <div style={{ gridColumn: '1 / -1' }}>
             <Field label="Room Number(s)" value={formatRoomNumbers(data.roomNumbers)} isDark={isDark} />
