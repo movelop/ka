@@ -230,7 +230,7 @@ const BookingTable = ({ columns, path }) => {
           >
             View →
           </Link>
-          <button
+          {user?.username === 'moh' && <button
             type="button"
             onClick={() => handleDelete(params.row)}
             style={{
@@ -253,7 +253,7 @@ const BookingTable = ({ columns, path }) => {
             }}
           >
             Delete
-          </button>
+          </button>}
         </div>
       ),
     },
