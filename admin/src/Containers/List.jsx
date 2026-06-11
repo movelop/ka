@@ -13,7 +13,7 @@ const List = ({ columns }) => {
     <div className="m-2 md:m-10 mt-8 p-6 md:p-8 dark:bg-secondary-dark-bg bg-white rounded-2xl">
 
       {/* Toolbar */}
-      <div className="flex justify-between items-start mb-6">
+      {path !== 'customers' && <div className="flex justify-between items-start mb-6">
         <Header category="Management" title={`All ${path}`} />
 
         <Link
@@ -35,7 +35,7 @@ const List = ({ columns }) => {
           </svg>
           Add New
         </Link>
-      </div>
+      </div>}
 
       {/* Table */}
       <div
