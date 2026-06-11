@@ -184,3 +184,78 @@ export const bookingColumns = [
     },
   },
 ] 
+
+
+export const customerColumns = [
+  { field: "id", headerName: "ID", width: 70 },
+
+  {
+    field: "fullName",
+    headerName: "Customer",
+    width: 230,
+    renderCell: (params) => {
+      return (
+        <div className="flex items-center">
+          <img
+            className="w-[32px] h-[32px] rounded-full object-cover mr-[20px]"
+            src={params.row.image || "https://i.ibb.co/MBtjqXQ/no-avatar.gif"}
+            alt="avatar"
+          />
+          <span className="capitalize">{params.row.fullName}</span>
+        </div>
+      );
+    },
+  },
+
+  {
+    field: "email",
+    headerName: "Email",
+    width: 230,
+  },
+
+  {
+    field: "phone",
+    headerName: "Phone",
+    width: 150,
+  },
+
+  {
+    field: "address",
+    headerName: "Address",
+    width: 300,
+  },
+
+  {
+    field: "totalBookings",
+    headerName: "Bookings",
+    width: 120,
+  },
+
+  {
+    field: "totalSpent",
+    headerName: "Total Spent",
+    width: 150,
+    renderCell: (params) => {
+      return (
+        <span className="font-medium">
+          ₦{params.row.totalSpent?.toLocaleString() || 0}
+        </span>
+      );
+    },
+  },
+
+  {
+    field: "lastBooking",
+    headerName: "Last Booking",
+    width: 180,
+    renderCell: (params) => {
+      return (
+        <span>
+          {params.row.lastBooking
+            ? new Date(params.row.lastBooking).toLocaleDateString("en-GB")
+            : "N/A"}
+        </span>
+      );
+    },
+  },
+];

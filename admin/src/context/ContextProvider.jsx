@@ -7,12 +7,12 @@ const initialState = {
 };
 
 export const ContextProvider = ({ children }) => {
-  const [screenSize, setScreenSize]     = useState(undefined);
-  const [currentColor, setCurrentColor] = useState('#03C9D7');
-  const [currentMode, setCurrentMode]   = useState('Light');
+  const [screenSize, setScreenSize]       = useState(undefined);
+  const [currentColor, setCurrentColor]   = useState('#03C9D7');
+  const [currentMode, setCurrentMode]     = useState('Light');
   const [themeSettings, setThemeSettings] = useState(false);
-  const [activeMenu, setActiveMenu]     = useState(true);
-  const [isClicked, setIsClicked]       = useState(initialState);
+  const [activeMenu, setActiveMenu]       = useState(false); // start closed
+  const [isClicked, setIsClicked]         = useState(initialState);
 
   /* ── Restore saved theme on mount ── */
   useEffect(() => {
@@ -31,6 +31,19 @@ export const ContextProvider = ({ children }) => {
       root.classList.remove('dark');
     }
   }, [currentMode]);
+
+  /* ── Track screen size and auto-open/close sidebar ── */
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setScreenSize(width);
+      setActiveMenu(width > 900);
+    };
+
+    handleResize(); // set correct state on first render
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const setMode = (e) => {
     setCurrentMode(e.target.value);

@@ -2,7 +2,7 @@ import React from 'react';
 import { BsFillCreditCardFill } from 'react-icons/bs'
 import { FiBarChart, FiUsers } from 'react-icons/fi';
 import { FaHotel } from 'react-icons/fa';
-import { MdBedroomParent, MdDashboard, MdOutlineSupervisorAccount } from 'react-icons/md';
+import { MdBedroomParent, MdDashboard, MdOutlineSupervisorAccount, MdPeople } from 'react-icons/md';
 import logo from '../assets/logo.png'
 
 export const images = {
@@ -34,6 +34,10 @@ export const links = [
       {
         name: 'rooms',
         icon: <MdBedroomParent />,
+      },
+      {
+        name: 'customers', 
+        icon: <MdPeople />
       },
       {
           name: 'bookings',

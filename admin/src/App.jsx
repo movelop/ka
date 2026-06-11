@@ -6,7 +6,7 @@ import { AuthContext } from './context/AuthContextProvider';
 import { Home, List, Login, NewBooking, NewFacility, NewRoom, NewUser, Single,BookingReceipt } from './Containers';
 import './App.css';
 import AppWrapper from './wrapper/AppWrapper';
-import { userColumns, roomColumns, facilityColumns, bookingColumns } from './Data/datatablesource';
+import { userColumns, roomColumns, facilityColumns, bookingColumns, customerColumns } from './Data/datatablesource';
 
 // Eliminates the repeated ternary pattern across every route
 const ProtectedRoute = ({ children }) => {
@@ -41,7 +41,9 @@ const App = () => {
         <Route path="dashboard" element={
           <ProtectedRoute><Home /></ProtectedRoute>
         } />
-
+        <Route path='customers' element = {
+          <ProtectedRoute><List columns={customerColumns} /></ProtectedRoute>
+        } />
         {/* Users */}
         <Route path="users">
           <Route index element={

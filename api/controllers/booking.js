@@ -294,3 +294,69 @@ export const getYearlyIncome = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * GET ALL CUSTOMERS (deduplicated by phone)
+ */
+export const getCustomers = async (req, res, next) => {
+  try {
+    const customers = await Booking.aggregate([
+      // Only non-cancelled bookings
+      { $match: { cancelled: false } },
+
+      // Sort by latest booking first so $first picks the most recent data
+      { $sort: { createdAt: -1 } },
+
+      // Group by phone — collate name, address, email from latest booking
+      {
+        $group: {
+          _id: {
+            // Normalize phone: strip spaces/dashes for dedup comparison
+            phone: {
+              $trim: {
+                input: { $replaceAll: { input: "$phone", find: " ", replacement: "" } }
+              }
+            }
+          },
+          firstName:    { $first: "$firstName" },
+          lastName:     { $first: "$lastName" },
+          phone:        { $first: "$phone" },
+          email:        { $first: "$email" },
+          address:      { $first: "$address" },
+          totalBookings: { $sum: 1 },
+          totalSpent:   { $sum: "$price" },
+          lastBooking:  { $first: "$createdAt" },
+        },
+      },
+
+      // Build clean output shape
+      {
+        $project: {
+          _id: 0,
+          firstName:     1,
+          lastName:      1,
+          phone:         1,
+          email:         1,
+          address:       1,
+          totalBookings: 1,
+          totalSpent:    1,
+          lastBooking:   1,
+          fullName: {
+            $concat: ["$firstName", " ", { $ifNull: ["$lastName", ""] }]
+          },
+        },
+      },
+
+      // Sort alphabetically by first name
+      { $sort: { firstName: 1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      total: customers.length,
+      customers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

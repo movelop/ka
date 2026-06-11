@@ -11,6 +11,7 @@ import {
   getLatestBookings,
   getIncome,
   getYearlyIncome,
+  getCustomers
 } from "../controllers/booking.js";
 
 import { verifyAdmin, verifyPayment } from "../utils/token.js";
@@ -45,6 +46,9 @@ router.get("/", verifyAdmin, getAllBookings);
 // Get latest bookings (admin)
 router.get("/latest", verifyAdmin, getLatestBookings);
 
+// add alongside your other booking routes
+router.get("/customers", verifyAdmin, getCustomers);
+
 // Update booking (admin)
 router.put("/:id", verifyAdmin, updateBooking);
 
@@ -56,5 +60,6 @@ router.delete("/:id", verifyAdmin, deleteBooking);
 
 // Get single booking by ID (admin) — MUST BE LAST
 router.get("/:id", verifyAdmin, getSingleBooking);
+
 
 export default router;
