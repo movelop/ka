@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Link } from 'react-router-dom';
 import { HiOutlineSearch } from 'react-icons/hi';
@@ -61,7 +61,6 @@ const Datatable = ({ columns, path }) => {
   const { currentColor, currentMode } = useStateContext();
   const isDark = currentMode === 'Dark';
 
-  // ✅ endpoint logic
   const endpoint =
     path === 'customers'
       ? `/bookings/${path}`
@@ -73,7 +72,7 @@ const Datatable = ({ columns, path }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteError, setDeleteError] = useState(null);
 
-  // ✅ normalize rows (fix missing id issue)
+  // ── Normalize rows (FIX: DataGrid requires id) ──────────────
   useEffect(() => {
     if (!data) return;
 
@@ -87,7 +86,7 @@ const Datatable = ({ columns, path }) => {
     setList(normalized);
   }, [data, path]);
 
-  // search filter
+  // ── Search filter ───────────────────────────────────────────
   const filteredList = searchTerm.trim()
     ? list.filter((row) =>
         Object.values(row).some(
@@ -96,9 +95,10 @@ const Datatable = ({ columns, path }) => {
       )
     : list;
 
-  // delete handler
+  // ── Delete handler ──────────────────────────────────────────
   const handleDelete = useCallback(async (id) => {
     setDeleteError(null);
+
     try {
       await api.delete(`${path}/${id}`, {
         headers: { token: `Bearer ${user?.token}` },
@@ -111,13 +111,12 @@ const Datatable = ({ columns, path }) => {
     }
   }, [path, user?.token]);
 
-  // ✅ condition: no action column for customers
   const finalColumns =
     path === 'customers'
       ? columns
       : [...columns, buildActionColumn(path, handleDelete, isDark, currentColor)];
 
-  // UI tokens
+  // ── Theme tokens ────────────────────────────────────────────
   const c = {
     border: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
     bg: isDark ? '#2d3139' : '#ffffff',
@@ -130,15 +129,18 @@ const Datatable = ({ columns, path }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-      {/* SEARCH */}
+      {/* ── Search ── */}
       <div style={{ position: 'relative', width: '320px' }}>
-        <HiOutlineSearch style={{
-          position: 'absolute',
-          left: '12px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          color: c.muted,
-        }} />
+        <HiOutlineSearch
+          style={{
+            position: 'absolute',
+            left: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: c.muted,
+            fontSize: '15px',
+          }}
+        />
 
         <input
           value={searchTerm}
@@ -152,11 +154,12 @@ const Datatable = ({ columns, path }) => {
             border: `1px solid ${c.border}`,
             background: c.inputBg,
             color: c.text,
+            outline: 'none',
           }}
         />
       </div>
 
-      {/* ERRORS */}
+      {/* ── Errors ── */}
       {(error || deleteError) && (
         <div style={{ color: '#ef4444', fontSize: '13px' }}>
           {error && 'Failed to load data.'}
@@ -164,7 +167,7 @@ const Datatable = ({ columns, path }) => {
         </div>
       )}
 
-      {/* GRID */}
+      {/* ── DataGrid ── */}
       <DataGrid
         rows={filteredList}
         columns={finalColumns}
@@ -179,6 +182,36 @@ const Datatable = ({ columns, path }) => {
           borderRadius: '12px',
           background: c.bg,
           color: c.text,
+
+          // ── FIX DARK MODE HEADER TEXT (YOUR ISSUE) ──
+          '& .MuiDataGrid-columnHeaders': {
+            background: isDark
+              ? 'rgba(255,255,255,0.03)'
+              : 'rgba(0,0,0,0.02)',
+            borderBottom: `1px solid ${c.border}`,
+          },
+
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: c.muted, // 🔥 FIXED
+          },
+
+          '& .MuiDataGrid-row:hover': {
+            background: c.rowHover,
+          },
+
+          '& .MuiDataGrid-cell': {
+            borderBottom: 'none',
+            color: c.text,
+            fontSize: '13px',
+          },
+
+          '& .MuiCheckbox-root': {
+            color: c.muted,
+          },
         }}
       />
     </div>
