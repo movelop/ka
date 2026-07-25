@@ -5,8 +5,8 @@ export const createError = (statusCode, message) => {
   return error;
 };
 
-
 export const errorHandler = (err, req, res, next) => {
+  console.error(err.stack); // add this
   const statusCode = err.statusCode || err.status || 500;
   const message = err.message || "Something went wrong";
 

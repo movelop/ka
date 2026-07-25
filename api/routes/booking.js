@@ -11,7 +11,9 @@ import {
   getLatestBookings,
   getIncome,
   getYearlyIncome,
-  getCustomers
+  getCustomers,
+  addPayment,
+  updateDiscount,
 } from "../controllers/booking.js";
 
 import { verifyAdmin, verifyPayment } from "../utils/token.js";
@@ -48,6 +50,12 @@ router.get("/latest", verifyAdmin, getLatestBookings);
 
 // add alongside your other booking routes
 router.get("/customers", verifyAdmin, getCustomers);
+
+// Record a payment / settle balance against a booking (admin)
+router.put("/:id/payment", verifyAdmin, addPayment);
+
+// Edit a booking's discount (admin)
+router.put("/:id/discount", verifyAdmin, updateDiscount);
 
 // Update booking (admin)
 router.put("/:id", verifyAdmin, updateBooking);

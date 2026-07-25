@@ -21,9 +21,22 @@ const getDatesInRange = (startDate, endDate) => {
   return dates;
 };
 
-const cancelRoomAvailability = (selectedRooms, alldates, token) =>
+// A booking may be in either shape:
+//   - OLD (pre-multi-category): flat `row.selectedRooms` on the booking itself
+//   - NEW: `row.rooms` is an array of room-category line items, each with
+//     its own `selectedRooms`. Flatten across every category so cancel/
+//     checkout/delete always frees every reserved room, regardless of
+//     which shape a given booking record was saved in.
+const getAllSelectedRoomIds = (row) => {
+  if (Array.isArray(row.rooms) && row.rooms.length) {
+    return row.rooms.flatMap((r) => r.selectedRooms || []);
+  }
+  return row.selectedRooms || [];
+};
+
+const cancelRoomAvailability = (roomIds, alldates, token) =>
   Promise.all(
-    selectedRooms.map((roomId) =>
+    roomIds.map((roomId) =>
       api.put(
         `/rooms/availability/${roomId}/cancel`,
         { dates: alldates },
@@ -124,7 +137,7 @@ const BookingTable = ({ columns, path }) => {
     setActionError(null);
     const alldates = getDatesInRange(row.startDate, row.endDate);
     try {
-      await cancelRoomAvailability(row.selectedRooms, alldates, user?.token);
+      await cancelRoomAvailability(getAllSelectedRoomIds(row), alldates, user?.token);
       await api.delete(`/${path}/${row._id}`, {
         headers: { token: `Bearer ${user?.token}` },
       });
@@ -139,7 +152,7 @@ const BookingTable = ({ columns, path }) => {
     setActionError(null);
     const alldates = getDatesInRange(row.startDate, row.endDate);
     try {
-      await cancelRoomAvailability(row.selectedRooms, alldates, user?.token);
+      await cancelRoomAvailability(getAllSelectedRoomIds(row), alldates, user?.token);
       await api.put(`/bookings/${row._id}`, { checkedOut: true }, {
         headers: { token: `Bearer ${user?.token}` },
       });
@@ -155,7 +168,13 @@ const BookingTable = ({ columns, path }) => {
   const handleCheckin = useCallback(async (row) => {
     setActionError(null);
     try {
-      await api.put(`/bookings/${row._id}`, { ...row, checkedIn: true }, {
+      // Only send the field that's actually changing. Previously this sent
+      // `{ ...row, checkedIn: true }` — harmless under the current
+      // updateBooking controller (which strips pricing/rooms fields before
+      // applying updates), but spreading the whole row is fragile: any
+      // future field added to a booking gets silently re-sent here too.
+      // Sending just the delta is the safer pattern regardless of shape.
+      await api.put(`/bookings/${row._id}`, { checkedIn: true }, {
         headers: { token: `Bearer ${user?.token}` },
       });
       setList((prev) =>

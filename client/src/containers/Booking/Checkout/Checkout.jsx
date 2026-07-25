@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { TbCurrencyNaira } from 'react-icons/tb';
 import api from '../../../hooks/api';
@@ -10,6 +10,13 @@ import { Footer, HeadingSmall, Testimonials, Loading } from '../../../components
 
 const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC;
 
+// NOTE: assumes GET /rooms returns every room category with a nightly
+// `price` field and a `roomNumbers` array (same shape as the room object
+// already passed in via location.state). Adjust the field names below
+// (PRICE_FIELD) if your Room model calls it something else.
+const PRICE_FIELD = 'price';
+
+let extraCategoryKey = 0;
 
 const Checkout = () => {
     const [loading, setLoading] = useState(false);
@@ -22,25 +29,34 @@ const Checkout = () => {
         firstName: "",
         lastName: "",
         email: "",
+        address: "",
         phone: "",
         identity: "",
     });
+
+    // Extra room categories the guest adds on this page.
+    // Each entry: { key, roomId, roomData, quantity, selectedRooms, selectedRoomNumbers }
+    const [extraCategories, setExtraCategories] = useState([]);
+    const [allRoomTypes, setAllRoomTypes] = useState([]);
+    const [roomTypesLoading, setRoomTypesLoading] = useState(false);
+
     const location = useLocation();
     const navigate = useNavigate();
     const { dates, options, days, totalPrice, room } = location.state;
+
     const getDatesInRange = (startDate, endDate) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
-    
+
         const date = new Date(start.getTime());
-    
+
         const dates = [];
-    
+
         while (date <= end) {
           dates.push(new Date(date).getTime());
           date.setDate(date.getDate() + 1);
         }
-    
+
         return dates;
     };
 
@@ -65,7 +81,7 @@ const Checkout = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        
+
     }
 
     const handleSelect = (e) => {
@@ -85,6 +101,155 @@ const Checkout = () => {
         )
     };
 
+    // ---- Extra room category handlers ----
+
+    // Fetch every room type once, so the "add another room type" dropdown
+    // has options to choose from (excluding the category already selected).
+    useEffect(() => {
+        // Extra categories only make sense when the guest is taking more
+        // than one room of the primary type — skip the fetch otherwise.
+        if (options.rooms <= 1) return;
+
+        const fetchRoomTypes = async () => {
+            setRoomTypesLoading(true);
+            try {
+                const res = await api.get('/rooms');
+                const list = Array.isArray(res.data) ? res.data : res.data.rooms;
+                setAllRoomTypes((list || []).filter((r) => r._id !== room._id));
+            } catch (err) {
+                // Non-fatal: guest just won't be able to add extra categories
+                setAllRoomTypes([]);
+            } finally {
+                setRoomTypesLoading(false);
+            }
+        };
+        fetchRoomTypes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // If options.rooms is only 1, extra categories should never be active —
+    // guard against stale state (e.g. browser back/forward navigation).
+    useEffect(() => {
+        if (options.rooms <= 1 && extraCategories.length > 0) {
+            setExtraCategories([]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options.rooms]);
+
+    const addCategory = () => {
+        setExtraCategories((prev) => [
+            ...prev,
+            {
+                key: extraCategoryKey++,
+                roomId: "",
+                roomData: null,
+                quantity: 1,
+                selectedRooms: [],
+                selectedRoomNumbers: [],
+            },
+        ]);
+    };
+
+    const removeCategory = (key) => {
+        setExtraCategories((prev) => prev.filter((c) => c.key !== key));
+    };
+
+    const updateCategory = (key, changes) => {
+        setExtraCategories((prev) =>
+            prev.map((c) => (c.key === key ? { ...c, ...changes } : c))
+        );
+    };
+
+    const handleCategoryRoomChange = (key, roomId) => {
+        const roomData = allRoomTypes.find((r) => r._id === roomId) || null;
+        updateCategory(key, {
+            roomId,
+            roomData,
+            selectedRooms: [],
+            selectedRoomNumbers: [],
+        });
+    };
+
+    const handleCategoryQuantityChange = (key, quantity) => {
+        setExtraCategories((prev) => {
+            const otherTotal = prev
+                .filter((c) => c.key !== key)
+                .reduce((sum, c) => sum + c.quantity, 0);
+            // Leave at least 0 rooms for the primary category, and never
+            // let this single category exceed the total the guest committed to.
+            const maxAllowed = Math.max(1, options.rooms - otherTotal);
+            const clamped = Math.min(maxAllowed, Math.max(1, Number(quantity) || 1));
+            return prev.map((c) =>
+                c.key === key
+                    ? { ...c, quantity: clamped, selectedRooms: [], selectedRoomNumbers: [] }
+                    : c
+            );
+        });
+    };
+
+    const handleCategoryRoomSelect = (key, e) => {
+        const checked = e.target.checked;
+        const value = e.target.value;
+        const name = e.target.name;
+
+        setExtraCategories((prev) =>
+            prev.map((c) => {
+                if (c.key !== key) return c;
+                return {
+                    ...c,
+                    selectedRooms: checked
+                        ? [...c.selectedRooms, value]
+                        : c.selectedRooms.filter((v) => v !== value),
+                    selectedRoomNumbers: checked
+                        ? [...c.selectedRoomNumbers, name]
+                        : c.selectedRoomNumbers.filter((v) => v !== name),
+                };
+            })
+        );
+    };
+
+    const categoryLineTotal = (category) => {
+        if (!category.roomData) return 0;
+        const nightlyPrice = Number(category.roomData[PRICE_FIELD]) || 0;
+        const pricePerRoom = nightlyPrice * days;
+        return pricePerRoom * category.quantity;
+    };
+
+    // The guest committed to `options.rooms` total rooms on the search page.
+    // Extra categories REDISTRIBUTE that fixed count across room types —
+    // they don't add more rooms on top of it. Example: options.rooms = 2,
+    // guest can split that into 1 Deluxe + 1 Executive, but never 2 + 1 = 3.
+    const extraCategoriesQuantityTotal = extraCategories.reduce(
+        (sum, c) => sum + c.quantity,
+        0
+    );
+    const rawPrimaryQuantity = options.rooms - extraCategoriesQuantityTotal;
+    const isOverAllocated = rawPrimaryQuantity < 0;
+    const primaryQuantity = Math.max(0, rawPrimaryQuantity);
+
+    // You can't have more distinct room TYPES than rooms selected — each
+    // type needs at least 1 room, so once (primary + extras) reaches
+    // options.rooms, there's no room left to give a brand-new category.
+    const maxCategoriesReached = extraCategories.length + 1 >= options.rooms;
+    const addCategoryDisabled = roomTypesLoading || allRoomTypes.length === 0 || primaryQuantity === 0 || maxCategoriesReached;
+
+    const primarySubtotal = primaryQuantity * days * (Number(room[PRICE_FIELD]) || 0);
+
+    const extraCategoriesTotal = extraCategories.reduce(
+        (sum, c) => sum + categoryLineTotal(c),
+        0
+    );
+
+    const grandTotal = primarySubtotal + extraCategoriesTotal;
+
+    // If room categories are added/adjusted, the number of primary rooms
+    // the guest needs to pick shifts too — clear stale selections so the
+    // count can't silently mismatch.
+    useEffect(() => {
+        setSelectedRooms([]);
+        setSelectedRoomNumbers([]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [primaryQuantity]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -100,20 +265,38 @@ const Checkout = () => {
             setMsg("Please enter a valid identity");
             return setError(true);
         }
-      
+
         if (isNaN(Number(formData.phone))) {
             setMsg("Phone number must only contain numbers");
             return setError(true);
         }
-      
+
         if (/.+@.+\..+/.test(formData.email) === false) {
             setMsg("Must be a valid email");
             return setError(true);
         }
-        
-        if(selectedRooms.length > options.rooms || selectedRooms.length < options.rooms) {
-            setMsg(`you must select only ${options.rooms} rooms`);
+
+        if (isOverAllocated) {
+            setMsg(`You can only select ${options.rooms} room(s) in total across all room types`);
             return setError(true);
+        }
+
+        if (primaryQuantity > 0 && selectedRooms.length !== primaryQuantity) {
+            setMsg(`you must select exactly ${primaryQuantity} ${room.title} room(s)`);
+            return setError(true);
+        }
+
+        if (options.rooms > 1) {
+            for (const category of extraCategories) {
+                if (!category.roomData) {
+                    setMsg("Choose a room type for every extra category you added, or remove it");
+                    return setError(true);
+                }
+                if (category.selectedRooms.length !== category.quantity) {
+                    setMsg(`You must select exactly ${category.quantity} ${category.roomData.title} room(s)`);
+                    return setError(true);
+                }
+            }
         }
 
         setPay(true);
@@ -122,26 +305,51 @@ const Checkout = () => {
 
 
     const handleSuccess = async (reference) => {
+        const roomsPayload = [
+            ...(primaryQuantity > 0
+                ? [
+                      {
+                          roomTitle: room.title,
+                          numberOfRooms: primaryQuantity,
+                          selectedRooms: selectedRooms,
+                          roomNumbers: selectedRoomNumbers,
+                          pricePerRoom: (Number(room[PRICE_FIELD]) || 0) * days,
+                      },
+                  ]
+                : []),
+            ...extraCategories.map((c) => ({
+                roomTitle: c.roomData.title,
+                numberOfRooms: c.quantity,
+                selectedRooms: c.selectedRooms,
+                roomNumbers: c.selectedRoomNumbers,
+                pricePerRoom: Number(c.roomData[PRICE_FIELD]) * days,
+            })),
+        ];
+
         const newBooking = {
-            ...formData,
-            roomTitle: room.title,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            address: formData.address,
+            phone: formData.phone,
+            identity: formData.identity,
+            rooms: roomsPayload,
             adults: options.adults,
             children: options.children,
             startDate: dates[0].startDate,
             endDate: dates[0].endDate,
-            numberOfRooms: options.rooms,
-            selectedRooms: selectedRooms,
-            roomNumbers: selectedRoomNumbers,
-            price: totalPrice,
             paymentReference: reference,
         }
+
+        const allSelectedRoomIds = roomsPayload.flatMap((r) => r.selectedRooms);
+
         setLoading(true);
         try {
             const verifyRes = await api.get(`/bookings/verify-payment/${reference}`);
             if(verifyRes.data.data.status === 'success'){
                 try {
                     await Promise.all(
-                        selectedRooms.map((roomId) => {
+                        allSelectedRoomIds.map((roomId) => {
                             const res = api.put(`/rooms/availability/${roomId}`, {
                                 dates: alldates,
                             });
@@ -164,7 +372,7 @@ const Checkout = () => {
 
     const componentProps = {
         email: formData.email,
-        amount: totalPrice * 100,
+        amount: grandTotal * 100,
         metadata:{
             name: `${formData.firstName} ${formData.lastName}`,
             phone: formData.phone,
@@ -230,11 +438,34 @@ const Checkout = () => {
                                         <span>{options.rooms}</span>
                                     </div>
                                     <div>
-                                        <h4>Total</h4>
-                                        <span style={{ fontWeight: "bold" }}><TbCurrencyNaira />{totalPrice.toLocaleString("en-US")}</span>
+                                        <h4>{room.title} ({primaryQuantity})</h4>
+                                        <span><TbCurrencyNaira />{primarySubtotal.toLocaleString("en-US")}</span>
                                     </div>
                                 </>
                             )}
+
+                            {options.rooms > 1 && extraCategories.map((category) => (
+                                <div className="extraCategoryRow" key={category.key}>
+                                    <div>
+                                        <h4>{category.roomData ? category.roomData.title : 'Extra room type'} ({category.quantity}):</h4>
+                                        <span>
+                                            <TbCurrencyNaira />{categoryLineTotal(category).toLocaleString("en-US")}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {isOverAllocated && (
+                                <div className="alert">
+                                    ⚠ You've allocated more rooms than you selected ({options.rooms}). Reduce a room type's quantity or remove a category.
+                                </div>
+                            )}
+
+                            <div>
+                                <h4>Total</h4>
+                                <span style={{ fontWeight: "bold" }}><TbCurrencyNaira />{grandTotal.toLocaleString("en-US")}</span>
+                            </div>
+
                             <div className="alert">
                                 ⚠ Damage to any hotel's property will be charged to the occupant of the room.
                             </div>
@@ -276,11 +507,11 @@ const Checkout = () => {
                                 <div className="guestFormInput">
                                     <label>Address</label>
                                     <input 
-                                        type="email"
+                                        type="text"
                                         onChange={handleChange}
                                         required
                                         className='guestDetailsInput'
-                                        name='address   '
+                                        name='address'
                                     />
                                 </div>
                                 <div className="guestFormInput">
@@ -304,24 +535,107 @@ const Checkout = () => {
                                         placeholder='ID number(NIN, Passport Number, etc.)'
                                     />
                                 </div>
-                                <div className="selectRoomContainer">
-                                    <label>Select your preferred room number(s)</label>
-                                    <div className="selectRoom">
-                                        {room.roomNumbers.map((roomNumber) => (
-                                                <div className="optionsBoxes" key ={roomNumber._id}>
-                                                    <label>{roomNumber.number}</label>
-                                                    <input
-                                                        className='checkbox'
-                                                        type="checkbox"
-                                                        value={roomNumber._id}
-                                                        name= {roomNumber.number}
-                                                        onChange={handleSelect}
-                                                        disabled={!isAvailable(roomNumber)}
-                                                    />
-                                                </div>
-                                        ))}
+                                {primaryQuantity > 0 && (
+                                    <div className="selectRoomContainer">
+                                        <label>Select your preferred room number(s) — {room.title} (choose {primaryQuantity})</label>
+                                        <div className="selectRoom">
+                                            {room.roomNumbers.map((roomNumber) => (
+                                                    <div className="optionsBoxes" key ={roomNumber._id}>
+                                                        <label>{roomNumber.number}</label>
+                                                        <input
+                                                            className='checkbox'
+                                                            type="checkbox"
+                                                            value={roomNumber._id}
+                                                            name= {roomNumber.number}
+                                                            checked={selectedRooms.includes(roomNumber._id)}
+                                                            onChange={handleSelect}
+                                                            disabled={!isAvailable(roomNumber)}
+                                                        />
+                                                    </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+
+                                {options.rooms > 1 && (
+                                    <>
+                                        {extraCategories.map((category) => (
+                                            <div className="selectRoomContainer extraCategoryContainer" key={category.key}>
+                                                <div className="extraCategoryHeader">
+                                                    <label>Extra room type</label>
+                                                    <button
+                                                        type="button"
+                                                        className="removeCategory"
+                                                        onClick={() => removeCategory(category.key)}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+
+                                                <select
+                                                    value={category.roomId}
+                                                    onChange={(e) => handleCategoryRoomChange(category.key, e.target.value)}
+                                                    disabled={roomTypesLoading}
+                                                >
+                                                    <option value="">
+                                                        {roomTypesLoading ? 'Loading room types...' : 'Select room type'}
+                                                    </option>
+                                                    {allRoomTypes.map((r) => (
+                                                        <option key={r._id} value={r._id}>{r.title}</option>
+                                                    ))}
+                                                </select>
+
+                                                {category.roomData && (
+                                                    <>
+                                                        <div className="guestFormInput">
+                                                            <label>Number of {category.roomData.title} rooms</label>
+                                                            <input
+                                                                type="number"
+                                                                min={1}
+                                                                value={category.quantity}
+                                                                onChange={(e) => handleCategoryQuantityChange(category.key, e.target.value)}
+                                                            />
+                                                        </div>
+
+                                                        <label>Select your preferred room number(s) — {category.roomData.title}</label>
+                                                        <div className="selectRoom">
+                                                            {category.roomData.roomNumbers.map((roomNumber) => (
+                                                                <div className="optionsBoxes" key={roomNumber._id}>
+                                                                    <label>{roomNumber.number}</label>
+                                                                    <input
+                                                                        className='checkbox'
+                                                                        type="checkbox"
+                                                                        value={roomNumber._id}
+                                                                        name={roomNumber.number}
+                                                                        checked={category.selectedRooms.includes(roomNumber._id)}
+                                                                        onChange={(e) => handleCategoryRoomSelect(category.key, e)}
+                                                                        disabled={!isAvailable(roomNumber)}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ))}
+
+                                        <button
+                                            type="button"
+                                            className="addCategory"
+                                            onClick={addCategory}
+                                            disabled={addCategoryDisabled}
+                                        >
+                                            + Add another room type
+                                        </button>
+                                        {addCategoryDisabled && !roomTypesLoading && allRoomTypes.length > 0 && (
+                                            <p className="allocationHint">
+                                                {maxCategoriesReached
+                                                    ? `You can't have more room types than rooms selected (${options.rooms}). Remove one to add a different type.`
+                                                    : `All ${options.rooms} room(s) are allocated. Reduce a quantity above to free up a room for another type.`}
+                                            </p>
+                                        )}
+                                    </>
+                                )}
                             </form>
                             <div className="guestFormButton">
                                     {pay ? <PaystackButton {...componentProps} className='pay' /> : <button className='continue' onClick={handleSubmit}>Continue to Pay</button>}

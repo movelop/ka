@@ -33,7 +33,7 @@ const BookingReceipt = () => {
      • Thick solid dividers instead of faint rgba borders
      • Font sizes bumped for readability on thermal roll
   ───────────────────────────────────────────────────── */
-  const buildPrintHTML = (b, rows) => {
+  const buildPrintHTML = (b, rows, balanceDueNotice) => {
     const logoSrc = images?.logo || "";
     return `<!DOCTYPE html>
 <html>
@@ -236,6 +236,8 @@ const BookingReceipt = () => {
 
     ${b.checkedIn ? `<span class="badge">✓ Checked In</span>` : ""}
 
+    ${balanceDueNotice ? `<div class="alert">⚠ ${balanceDueNotice}</div>` : ""}
+
     <hr class="rule-dashed"/>
 
     <!-- Detail rows (all except total) -->
@@ -293,29 +295,68 @@ const BookingReceipt = () => {
   const formatDate = (date) =>
     new Date(date).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
 
+  const formatNaira = (n) => `NGN ${Number(n || 0).toLocaleString()}`;
+
   const days = Math.ceil(
     (new Date(booking.endDate) - new Date(booking.startDate)) / (1000 * 60 * 60 * 24)
   );
 
+  // Booking now holds one or more room CATEGORIES (booking.rooms), not a
+  // single flat roomTitle/roomNumbers pair. Fall back to the old flat shape
+  // only if an older booking record ever lacks `rooms` (defensive, not the
+  // normal path going forward).
+  const roomCategories = Array.isArray(booking.rooms) ? booking.rooms : [];
+  const roomsSummary = roomCategories.length
+    ? roomCategories
+        .map((r) => `${r.numberOfRooms}× ${r.roomTitle}${r.roomNumbers?.length ? ` (${r.roomNumbers.join(", ")})` : ""}`)
+        .join("; ")
+    : (booking.roomNumbers?.join(", ") || booking.roomTitle || "N/A");
+
+  const hasDiscount = booking.discount && booking.discount.type && booking.discount.type !== "none" && Number(booking.discount.amount) > 0;
+
+  // totalPrice/amountPaid/balanceDue/paymentStatus come from the saved
+  // booking (post pre-validate hook). Fall back to `price` for any older
+  // booking record that predates the discount/payment redesign.
+  const totalAmount   = booking.totalPrice ?? booking.price;
+  const amountPaid    = typeof booking.amountPaid === "number" ? booking.amountPaid : null;
+  const balanceDue    = typeof booking.balanceDue === "number" ? booking.balanceDue : null;
+  const paymentStatus = booking.paymentStatus;
+  const hasBalanceDue = balanceDue !== null && balanceDue > 0;
+
+  const balanceDueNotice = hasBalanceDue
+    ? `Balance due: ${formatNaira(balanceDue)} — collect before checkout.`
+    : null;
+
   const rows = [
-    { label: "Room(s)",           value: booking.roomNumbers?.join(", ") || "N/A" },
-    { label: "Name",              value: `${booking.lastName || ""} ${booking.firstName || ""}`.trim() },
-    { label: "Email",             value: booking.email },
-    { label: "Phone",             value: booking.phone },
-    { label: "ID Number",         value: booking.identity || "—" },
-    { label: "Payment Ref",       value: booking.paymentReference || "Cash" },
-    { label: "Room Type",         value: booking.roomTitle },
-    { label: "Adults",            value: booking.adults },
-    { label: "Children",          value: booking.children },
-    { label: "Night(s)",          value: days },
-    { label: "Check-in",          value: formatDate(booking.startDate) },
-    { label: "Check-out",         value: formatDate(booking.endDate) },
-    { label: "Total Amount",      value: `NGN ${Number(booking.price).toLocaleString()}` }, // ₦ may not render on thermal
+    { label: "Room(s)",      value: roomsSummary },
+    { label: "Name",         value: `${booking.lastName || ""} ${booking.firstName || ""}`.trim() },
+    { label: "Email",        value: booking.email },
+    { label: "Phone",        value: booking.phone },
+    { label: "ID Number",    value: booking.identity || "—" },
+    { label: "Payment Ref",  value: booking.paymentReference || "Cash" },
+    { label: "Adults",       value: booking.adults },
+    { label: "Children",     value: booking.children },
+    { label: "Night(s)",     value: days },
+    { label: "Check-in",     value: formatDate(booking.startDate) },
+    { label: "Check-out",    value: formatDate(booking.endDate) },
+    ...(hasDiscount
+      ? [
+          { label: "Subtotal", value: formatNaira(booking.subtotal ?? totalAmount) },
+          { label: "Discount", value: `- ${formatNaira(booking.discount.amount)}${booking.discount.reason ? ` (${booking.discount.reason})` : ""}` },
+        ]
+      : []),
+    ...(amountPaid !== null
+      ? [
+          { label: "Amount Paid", value: formatNaira(amountPaid) },
+          { label: "Balance Due", value: formatNaira(balanceDue) },
+        ]
+      : []),
+    { label: "Total Amount", value: formatNaira(totalAmount) },
   ];
 
   /* ── Print handler ── */
   const handlePrint = () => {
-    const html = buildPrintHTML(booking, rows);
+    const html = buildPrintHTML(booking, rows, balanceDueNotice);
     const win  = window.open("", "_blank", "width=500,height=900");
     win.document.write(html);
     win.document.close();
@@ -408,20 +449,42 @@ const BookingReceipt = () => {
               </span>
             </div>
 
-            {/* Checked-in badge */}
-            {booking.checkedIn && (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", marginBottom: "1.5rem", fontSize: "10px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#b8913f" }}>
-                <MdCheckCircle style={{ fontSize: "13px" }} /> Checked In
-              </div>
-            )}
+            {/* Checked-in / payment status badges */}
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.5rem", marginBottom: booking.checkedIn || paymentStatus ? "1.5rem" : 0 }}>
+              {booking.checkedIn && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "10px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#b8913f" }}>
+                  <MdCheckCircle style={{ fontSize: "13px" }} /> Checked In
+                </div>
+              )}
+              {paymentStatus === "paid" && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "10px", fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#b8913f" }}>
+                  <MdCheckCircle style={{ fontSize: "13px" }} /> Paid In Full
+                </div>
+              )}
+            </div>
 
             {/* Confirmation code */}
             <p style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(26,26,24,0.45)", marginBottom: "0.4rem" }}>
               Confirmation Code
             </p>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontSize: "38px", letterSpacing: "0.12em", color: "#1a1a18", marginBottom: "2rem" }}>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontSize: "38px", letterSpacing: "0.12em", color: "#1a1a18", marginBottom: hasBalanceDue ? "1.25rem" : "2rem" }}>
               {booking.confirmation || "—"}
             </p>
+
+            {/* Balance due notice — surfaced above the detail rows since it's
+                the thing front desk most needs to see at a glance */}
+            {hasBalanceDue && (
+              <div style={{
+                width: "100%", marginBottom: "1.5rem",
+                padding: "0.75rem 1rem",
+                background: "rgba(184,145,63,0.1)",
+                borderLeft: "2px solid #b8913f",
+                fontSize: "12px", fontWeight: 500,
+                color: "#8a6a2c", lineHeight: 1.6,
+              }}>
+                ⚠ {balanceDueNotice}
+              </div>
+            )}
 
             {/* Detail rows */}
             <div style={{ width: "100%" }}>
@@ -434,7 +497,12 @@ const BookingReceipt = () => {
                   <span style={{ fontSize: "10px", fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(26,26,24,0.45)", flexShrink: 0 }}>
                     {label}
                   </span>
-                  <span style={{ fontSize: "13px", fontWeight: 400, color: "#1a1a18", textAlign: "right" }}>
+                  <span style={{
+                    fontSize: label === "Total Amount" ? "16px" : "13px",
+                    fontWeight: label === "Total Amount" ? 600 : 400,
+                    fontFamily: label === "Total Amount" ? "'Cormorant Garamond', serif" : "'Jost', sans-serif",
+                    color: "#1a1a18", textAlign: "right",
+                  }}>
                     {value ?? "—"}
                   </span>
                 </div>

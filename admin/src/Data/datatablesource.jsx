@@ -95,6 +95,41 @@ export const roomColumns = [
   },
 ];
 
+// A booking may be in either shape:
+//   - OLD (pre-multi-category): flat roomTitle / roomNumbers / price on the booking itself
+//   - NEW: `rooms` is an array of room-category line items, each with its
+//     own roomTitle/roomNumbers, plus a top-level totalPrice after discount
+// These helpers read whichever shape a given row actually has, so the grid
+// never crashes on either an old or a new booking record.
+const getRoomTitleSummary = (row) => {
+  if (Array.isArray(row.rooms) && row.rooms.length) {
+    return row.rooms.map((r) => r.roomTitle).join(", ");
+  }
+  return row.roomTitle || "—";
+};
+
+const getRoomNumberSummary = (row) => {
+  if (Array.isArray(row.rooms) && row.rooms.length) {
+    return row.rooms.flatMap((r) => r.roomNumbers || []);
+  }
+  return row.roomNumbers || [];
+};
+
+const getBookingPrice = (row) => {
+  // totalPrice (post-discount) is the new field; price is the old one
+  if (typeof row.totalPrice === "number") return row.totalPrice;
+  return row.price;
+};
+
+// A booking predating the multi-category redesign never has a `rooms`
+// array. Mongoose backfills MISSING fields with their schema defaults when
+// reading a document — so an old booking's paymentStatus doesn't come back
+// as undefined, it comes back as "unpaid" (the schema default), same for
+// amountPaid: 0. Checking `!row.paymentStatus` therefore never catches old
+// bookings; checking for the absence of `rooms` does, since old documents
+// genuinely never had that field written to them.
+const isLegacyBooking = (row) => !Array.isArray(row.rooms) || row.rooms.length === 0;
+
 export const bookingColumns = [
   {
     field: "confirmation", headerName: "Confirmation", width: 200,
@@ -142,13 +177,21 @@ export const bookingColumns = [
   },
   {
     field: "roomTitle", headerName: "Room Title", width: 150,
+    renderCell: (params) => {
+      return (
+        <div className="flex items-center">
+          <span className="capitalize">{getRoomTitleSummary(params.row)}</span>
+        </div>
+      );
+    },
   },
   {
     field: 'roomNumbers', headerName: 'Room Numbers', width: 150,
     renderCell: (params) => {
+      const numbers = getRoomNumberSummary(params.row);
       return(
         <div className="flex items-center">
-          <span className="capitalize">{params.row.roomNumbers.map((roomNumber, i) => i === params.row.roomNumbers.length - 1 ? roomNumber : `${roomNumber}, ` )}</span>
+          <span className="capitalize">{numbers.length ? numbers.join(", ") : "—"}</span>
         </div>
       )
     }
@@ -156,13 +199,36 @@ export const bookingColumns = [
   {
     field: "price", headerName: "Price", width: 100,
     renderCell: (params) => {
+      const price = getBookingPrice(params.row);
       return (
         <div className="flex items-center">
-          <span className="capitalize">{params.row.price > 0? params.row.price : "Complimentry"}</span>
+          <span className="capitalize">{price > 0 ? `₦${price.toLocaleString()}` : "Complimentry"}</span>
         </div>
       );
     },
-  }, 
+  },
+  {
+    field: "paymentStatus", headerName: "Payment", width: 130,
+    renderCell: (params) => {
+      // Old bookings always show as paid — they predate down payments
+      // entirely, so there's no real balance to track for them, whatever
+      // the (defaulted) paymentStatus value looks like.
+      const status = isLegacyBooking(params.row) ? "paid" : params.row.paymentStatus;
+      if (!status || status === "paid") {
+        return (
+          <div className="p-[5px] rounded-sm bg-[#0080000d] text-green-700">
+            Paid
+          </div>
+        );
+      }
+      const label = status === "partial" ? "Partial" : "Unpaid";
+      return (
+        <div className={`p-[5px] rounded-sm ${status === "partial" ? "bg-[#ff98000d] text-orange-700" : "bg-[#ff00000d] text-red-700"}`}>
+          {label}
+        </div>
+      );
+    },
+  },
   {
     field: "registeredBy", headerName: "Channel", width: 200,
     renderCell: (params) => {

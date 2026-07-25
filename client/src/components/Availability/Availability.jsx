@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HiLocationMarker } from 'react-icons/hi';
 import { TbCurrencyNaira } from 'react-icons/tb';
 
@@ -9,6 +10,7 @@ const Availability = ({ room }) => {
   const [availableRooms, setAvailableRooms] = useState([]);
   const { dates, options } = useContext(SearchContext);
   const isAvailable = availableRooms.length > 0;
+  const navigate = useNavigate();
 
   useEffect(() => {
     let a = [];
@@ -51,6 +53,9 @@ const Availability = ({ room }) => {
 
   const days = dayDifference(dates[0].endDate, dates[0].startDate);
   const totalPrice = days * options.rooms * room.price;
+  const handleBooking = (room) => {
+    navigate('/booking/checkout', { state: { dates, options, days, totalPrice, room } });
+  }
 
   const whatsappMessage = `Hello, I'd like to book the *${room.title}* room for ${days} night(s) from ${new Date(dates[0].startDate).toDateString()} to ${new Date(dates[0].endDate).toDateString()}. Total: ₦${totalPrice.toLocaleString('en-US')}`;
 
@@ -105,14 +110,20 @@ const Availability = ({ room }) => {
         </div>
 
         {isAvailable ? (
-          <button className="availabilityButton">
-            <a
-              href={`https://wa.me/2348163140615?text=Hello%20I%20would%20like%20to%20make%20an%20enquiry%20about%20your%20services`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>Book</span>
-            </a>
+          // <button className="availabilityButton">
+          //   <a
+          //     href={`https://wa.me/2348163140615?text=Hello%20I%20would%20like%20to%20make%20an%20enquiry%20about%20your%20services`}
+          //     target="_blank"
+          //     rel="noopener noreferrer"
+          //   >
+          //     <span>Book</span>
+          //   </a>
+          // </button>
+          <button
+              className="availabilityButton"
+              onClick={() => handleBooking(room)}
+          >
+              Book
           </button>
         ) : (
           <button

@@ -13,6 +13,12 @@ import useFetch from "../hooks/useFetch";
 import { AuthContext } from "../context/AuthContextProvider";
 import { useStateContext } from "../context/ContextProvider";
 
+// NOTE: assumes each room category document exposes a nightly `price` field
+// and a `roomNumbers` array — same shape as everywhere else in the app.
+const PRICE_FIELD = "price";
+
+let extraCategoryKey = 0;
+
 const NewBooking = () => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -45,6 +51,17 @@ const NewBooking = () => {
   const [error, setError]                             = useState(false);
   const [msg, setMsg]                                 = useState("");
   const [isProcessing, setIsProcessing]               = useState(false);
+
+  // Extra room categories added to this single booking. Each entry:
+  // { key, roomId, roomData, quantity, selectedRooms, selectedRoomNumbers }
+  const [extraCategories, setExtraCategories]         = useState([]);
+
+  // Admin-only discount
+  const [discount, setDiscount]                       = useState({ type: "none", value: "", reason: "" });
+
+  // Admin-only down payment — defaults to fully paid; toggle off to record a partial deposit
+  const [fullyPaid, setFullyPaid]                     = useState(true);
+  const [amountPaidInput, setAmountPaidInput]         = useState("");
 
   const { data } = useFetch("/rooms");
 
@@ -99,37 +116,249 @@ const NewBooking = () => {
     });
   };
 
-  const days       = Math.ceil((dates[0].endDate - dates[0].startDate) / (1000 * 60 * 60 * 24));
-  const totalPrice = days * options.rooms * (room?.price || 0);
+  const days = Math.ceil((dates[0].endDate - dates[0].startDate) / (1000 * 60 * 60 * 24));
+
+  // ---- Extra room category handlers ----
+  // Same model as the public checkout page: `options.rooms` is a FIXED pool
+  // shared across every category — adding a category reallocates rooms away
+  // from the primary type rather than adding more rooms on top of it.
+
+  const addCategory = () => {
+    setExtraCategories((prev) => [
+      ...prev,
+      {
+        key: extraCategoryKey++,
+        roomId: "",
+        roomData: null,
+        quantity: 1,
+        selectedRooms: [],
+        selectedRoomNumbers: [],
+      },
+    ]);
+  };
+
+  const removeCategory = (key) => {
+    setExtraCategories((prev) => prev.filter((cat) => cat.key !== key));
+  };
+
+  const handleCategoryRoomChange = (key, roomId) => {
+    const roomData = rooms.find((r) => r._id === roomId) || null;
+    setExtraCategories((prev) =>
+      prev.map((cat) =>
+        cat.key === key
+          ? { ...cat, roomId, roomData, selectedRooms: [], selectedRoomNumbers: [] }
+          : cat
+      )
+    );
+  };
+
+  const handleCategoryQuantityChange = (key, quantity) => {
+    setExtraCategories((prev) => {
+      const otherTotal = prev
+        .filter((cat) => cat.key !== key)
+        .reduce((sum, cat) => sum + cat.quantity, 0);
+      const maxAllowed = Math.max(1, options.rooms - otherTotal);
+      const clamped = Math.min(maxAllowed, Math.max(1, Number(quantity) || 1));
+      return prev.map((cat) =>
+        cat.key === key
+          ? { ...cat, quantity: clamped, selectedRooms: [], selectedRoomNumbers: [] }
+          : cat
+      );
+    });
+  };
+
+  const handleCategoryRoomSelect = (key, e) => {
+    const { checked, value, name } = e.target;
+    setExtraCategories((prev) =>
+      prev.map((cat) => {
+        if (cat.key !== key) return cat;
+        return {
+          ...cat,
+          selectedRooms: checked
+            ? [...cat.selectedRooms, value]
+            : cat.selectedRooms.filter((v) => v !== value),
+          selectedRoomNumbers: checked
+            ? [...cat.selectedRoomNumbers, name]
+            : cat.selectedRoomNumbers.filter((v) => v !== name),
+        };
+      })
+    );
+  };
+
+  // Reset extra categories entirely if the room count drops to 1
+  useEffect(() => {
+    if (options.rooms <= 1 && extraCategories.length > 0) {
+      setExtraCategories([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.rooms]);
+
+  const extraCategoriesQuantityTotal = extraCategories.reduce((sum, cat) => sum + cat.quantity, 0);
+  const rawPrimaryQuantity = options.rooms - extraCategoriesQuantityTotal;
+  const isOverAllocated = rawPrimaryQuantity < 0;
+  const primaryQuantity = Math.max(0, rawPrimaryQuantity);
+
+  // You can't have more distinct room TYPES than rooms booked — each type
+  // needs at least 1 room, so once (primary + extras) reaches options.rooms,
+  // there's no room left to give a brand-new category.
+  const maxCategoriesReached = extraCategories.length + 1 >= options.rooms;
+  const addCategoryDisabled = primaryQuantity === 0 || maxCategoriesReached;
+
+  // Reset primary room-number selection whenever the primary allocation shifts
+  useEffect(() => {
+    setSelectedRooms([]);
+    setSelectedRoomNumbers([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [primaryQuantity]);
+
+  const categoryLineTotal = (category) => {
+    if (!category.roomData) return 0;
+    const nightlyPrice = Number(category.roomData[PRICE_FIELD]) || 0;
+    return nightlyPrice * days * category.quantity;
+  };
+
+  const primarySubtotal      = primaryQuantity * days * (Number(room?.[PRICE_FIELD]) || 0);
+  const extraCategoriesTotal = extraCategories.reduce((sum, cat) => sum + categoryLineTotal(cat), 0);
+  const subtotal             = primarySubtotal + extraCategoriesTotal;
+
+  // ---- Discount ----
+  let discountAmount = 0;
+  if (discount.type === "percentage") {
+    discountAmount = (subtotal * (Number(discount.value) || 0)) / 100;
+  } else if (discount.type === "fixed") {
+    discountAmount = Number(discount.value) || 0;
+  }
+  discountAmount = Math.min(Math.max(discountAmount, 0), subtotal);
+
+  const totalPrice = Math.round((subtotal - discountAmount) * 100) / 100;
+
+  // ---- Payment ----
+  // Down payments / part payments are only allowed for bookings that check
+  // in on a future date. If check-in is today, the balance must be settled
+  // in full at booking time — there's no later point before check-in to
+  // collect the rest.
+  const isCheckInToday = (() => {
+    const today = new Date();
+    const checkIn = dates[0].startDate;
+    return (
+      checkIn.getFullYear() === today.getFullYear() &&
+      checkIn.getMonth() === today.getMonth() &&
+      checkIn.getDate() === today.getDate()
+    );
+  })();
+
+  const effectiveAmountPaid = (fullyPaid || isCheckInToday)
+    ? totalPrice
+    : Math.min(Math.max(Number(amountPaidInput) || 0, 0), totalPrice);
+  const balanceDue = Math.max(0, Math.round((totalPrice - effectiveAmountPaid) * 100) / 100);
+
+  // If the guest was mid-way through recording a part payment and then
+  // changed the check-in date to today, snap back to fully paid instead of
+  // silently letting a same-day booking through with a balance.
+  useEffect(() => {
+    if (isCheckInToday && !fullyPaid) {
+      setFullyPaid(true);
+      setAmountPaidInput("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCheckInToday]);
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    if (selectedRooms.length !== options.rooms) {
-      setMsg(`Please select exactly ${options.rooms} room(s).`);
+
+    if (isCheckInToday && balanceDue > 0) {
+      setMsg("Full payment is required for bookings checking in today. Part payment is only available for future check-in dates.");
+      return setError(true);
+    }
+
+    if (isOverAllocated) {
+      setMsg(`You can only allocate ${options.rooms} room(s) in total across all room types`);
+      return setError(true);
+    }
+
+    if (primaryQuantity > 0 && selectedRooms.length !== primaryQuantity) {
+      setMsg(`Please select exactly ${primaryQuantity} ${room?.title || ""} room(s).`);
+      return setError(true);
+    }
+
+    for (const category of extraCategories) {
+      if (!category.roomData) {
+        setMsg("Choose a room type for every extra category you added, or remove it");
+        return setError(true);
+      }
+      if (category.selectedRooms.length !== category.quantity) {
+        setMsg(`Please select exactly ${category.quantity} ${category.roomData.title} room(s).`);
+        return setError(true);
+      }
+    }
+
+    if (discount.type !== "none" && (discount.value === "" || Number(discount.value) < 0)) {
+      setMsg("Enter a valid discount value");
       return setError(true);
     }
 
     setIsProcessing(true);
+
+    const roomsPayload = [
+      ...(primaryQuantity > 0
+        ? [
+            {
+              roomTitle: room.title,
+              numberOfRooms: primaryQuantity,
+              selectedRooms,
+              roomNumbers: selectedRoomNumbers,
+              pricePerRoom: (Number(room[PRICE_FIELD]) || 0) * days,
+            },
+          ]
+        : []),
+      ...extraCategories.map((cat) => ({
+        roomTitle: cat.roomData.title,
+        numberOfRooms: cat.quantity,
+        selectedRooms: cat.selectedRooms,
+        roomNumbers: cat.selectedRoomNumbers,
+        pricePerRoom: (Number(cat.roomData[PRICE_FIELD]) || 0) * days,
+      })),
+    ];
+
     const bookingData = {
       ...info,
-      roomTitle:     room.title,
+      rooms:         roomsPayload,
       adults:        options.adults,
       children:      options.children,
       startDate:     dates[0].startDate,
       endDate:       dates[0].endDate,
-      numberOfRooms: options.rooms,
-      selectedRooms,
-      roomNumbers:   selectedRoomNumbers,
-      price:         info.amount || totalPrice,
       email:         info.email || `janedoe@yahoo.com`,
-      identity:      info.identity || 'NIL',
+      identity:      info.identity || "NIL",
       checkedIn,
       registeredBy:  `${user.firstName} ${user.lastName}`,
+      ...(discount.type !== "none"
+        ? {
+            discount: {
+              type: discount.type,
+              value: Number(discount.value) || 0,
+              reason: discount.reason,
+              approvedBy: `${user.firstName} ${user.lastName}`,
+            },
+          }
+        : {}),
+      ...(effectiveAmountPaid > 0
+        ? {
+            downPayment: {
+              amount: effectiveAmountPaid,
+              method: "cash",
+            },
+          }
+        : {}),
     };
+
+    const allSelectedRoomIds = [
+      ...selectedRooms,
+      ...extraCategories.flatMap((cat) => cat.selectedRooms),
+    ];
 
     try {
       await Promise.all(
-        selectedRooms.map((roomId) =>
+        allSelectedRoomIds.map((roomId) =>
           api.put(`/rooms/availability/${roomId}`, {
             dates: getDatesInRange(dates[0].startDate, dates[0].endDate),
           })
@@ -145,8 +374,11 @@ const NewBooking = () => {
             ...bookingData,
             _id:          saved?._id,
             confirmation: saved?.confirmation,
-            roomNumbers:  saved?.roomNumbers || selectedRoomNumbers,
-            price:        saved?.price       || bookingData.price,
+            totalPrice:   saved?.totalPrice   ?? totalPrice,
+            amountPaid:   saved?.amountPaid   ?? effectiveAmountPaid,
+            balanceDue:   saved?.balanceDue   ?? balanceDue,
+            paymentStatus: saved?.paymentStatus,
+            rooms:        saved?.rooms        || roomsPayload,
           },
         },
       });
@@ -202,7 +434,6 @@ const NewBooking = () => {
             Summary
           </p>
           {[
-            { label: "Room",      value: room?.title || "—" },
             { label: "Check-in",  value: format(dates[0].startDate, "dd MMM yyyy") },
             { label: "Check-out", value: format(dates[0].endDate,   "dd MMM yyyy") },
             { label: "Night(s)",  value: days },
@@ -214,10 +445,51 @@ const NewBooking = () => {
               <span style={{ fontSize: "12px", fontWeight: 500, color: c.text }}>{value}</span>
             </div>
           ))}
+
+          {room && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${c.border}` }}>
+              <span style={{ fontSize: "12px", color: c.muted }}>{room.title} ({primaryQuantity})</span>
+              <span style={{ fontSize: "12px", fontWeight: 500, color: c.text }}>₦{primarySubtotal.toLocaleString()}</span>
+            </div>
+          )}
+
+          {extraCategories.map((cat) => (
+            <div key={cat.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${c.border}` }}>
+              <span style={{ fontSize: "12px", color: c.muted }}>{cat.roomData?.title || "Extra room"} ({cat.quantity})</span>
+              <span style={{ fontSize: "12px", fontWeight: 500, color: c.text }}>₦{categoryLineTotal(cat).toLocaleString()}</span>
+            </div>
+          ))}
+
+          {isOverAllocated && (
+            <p style={{ fontSize: "11px", color: "#ef4444", margin: "8px 0 0" }}>
+              ⚠ Allocated more than {options.rooms} room(s) — reduce a quantity above.
+            </p>
+          )}
+
+          {discountAmount > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${c.border}` }}>
+              <span style={{ fontSize: "12px", color: c.muted }}>Discount</span>
+              <span style={{ fontSize: "12px", fontWeight: 500, color: "#ef4444" }}>-₦{discountAmount.toLocaleString()}</span>
+            </div>
+          )}
+
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0 0" }}>
             <span style={{ fontSize: "13px", fontWeight: 700, color: c.text }}>Total</span>
             <span style={{ fontSize: "16px", fontWeight: 700, color: currentColor }}>₦{totalPrice.toLocaleString()}</span>
           </div>
+
+          {!fullyPaid && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0 0" }}>
+                <span style={{ fontSize: "12px", color: c.muted }}>Paid now</span>
+                <span style={{ fontSize: "12px", fontWeight: 500, color: c.text }}>₦{effectiveAmountPaid.toLocaleString()}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0 0" }}>
+                <span style={{ fontSize: "12px", color: c.muted }}>Balance due</span>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "#ef4444" }}>₦{balanceDue.toLocaleString()}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Form */}
@@ -282,22 +554,85 @@ const NewBooking = () => {
           </div>
 
           {/* Room numbers */}
-          {room && (
+          {room && primaryQuantity > 0 && (
             <div>
-              <label style={labelStyle}>Room Numbers</label>
+              <label style={labelStyle}>Room Numbers — {room.title} (choose {primaryQuantity})</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {room.roomNumbers.map((rNum) => {
                   const available = isRoomAvailable(rNum);
                   const selected  = selectedRooms.includes(rNum._id);
                   return (
                     <label key={rNum._id} style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 12px", borderRadius: "8px", cursor: available ? "pointer" : "not-allowed", fontSize: "12px", fontWeight: 600, border: `1px solid ${selected ? currentColor : c.border}`, background: selected ? `${currentColor}15` : c.surface, color: !available ? c.muted : selected ? currentColor : c.text, opacity: available ? 1 : 0.45, transition: "all 0.15s" }}>
-                      <input type="checkbox" value={rNum._id} name={rNum.number.toString()} onChange={handleRoomNumberSelect} disabled={!available} style={{ display: "none" }} />
+                      <input type="checkbox" value={rNum._id} name={rNum.number.toString()} checked={selected} onChange={handleRoomNumberSelect} disabled={!available} style={{ display: "none" }} />
                       {rNum.number}
                       {!available && <span style={{ fontSize: "9px" }}>Unavail.</span>}
                     </label>
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Extra room categories */}
+          {options.rooms > 1 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              {extraCategories.map((cat) => (
+                <div key={cat.key} style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "1rem", borderRadius: "12px", border: `1px solid ${c.border}`, background: c.surface }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <label style={labelStyle}>Extra Room Type</label>
+                    <button type="button" onClick={() => removeCategory(cat.key)}
+                      style={{ fontSize: "11px", fontWeight: 600, color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                      Remove
+                    </button>
+                  </div>
+
+                  <select value={cat.roomId} onChange={(e) => handleCategoryRoomChange(cat.key, e.target.value)}
+                    style={{ ...inputStyle, cursor: "pointer" }} onFocus={focusInput} onBlur={blurInput}>
+                    <option value="">Select room type</option>
+                    {rooms.filter((r) => r._id !== room?._id).map((r) => (
+                      <option key={r._id} value={r._id}>{r.title}</option>
+                    ))}
+                  </select>
+
+                  {cat.roomData && (
+                    <>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <label style={labelStyle}>Number of {cat.roomData.title} rooms</label>
+                        <input type="number" min={1} value={cat.quantity}
+                          onChange={(e) => handleCategoryQuantityChange(cat.key, e.target.value)}
+                          style={inputStyle} onFocus={focusInput} onBlur={blurInput} />
+                      </div>
+
+                      <label style={labelStyle}>Room Numbers — {cat.roomData.title} (choose {cat.quantity})</label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                        {cat.roomData.roomNumbers.map((rNum) => {
+                          const available = isRoomAvailable(rNum);
+                          const selected  = cat.selectedRooms.includes(rNum._id);
+                          return (
+                            <label key={rNum._id} style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 12px", borderRadius: "8px", cursor: available ? "pointer" : "not-allowed", fontSize: "12px", fontWeight: 600, border: `1px solid ${selected ? currentColor : c.border}`, background: selected ? `${currentColor}15` : c.bg, color: !available ? c.muted : selected ? currentColor : c.text, opacity: available ? 1 : 0.45, transition: "all 0.15s" }}>
+                              <input type="checkbox" value={rNum._id} name={rNum.number.toString()} checked={selected} onChange={(e) => handleCategoryRoomSelect(cat.key, e)} disabled={!available} style={{ display: "none" }} />
+                              {rNum.number}
+                              {!available && <span style={{ fontSize: "9px" }}>Unavail.</span>}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+
+              <button type="button" onClick={addCategory} disabled={addCategoryDisabled}
+                style={{ alignSelf: "flex-start", padding: "8px 16px", borderRadius: "8px", border: `1px dashed ${c.border}`, background: "transparent", color: currentColor, fontSize: "12px", fontWeight: 600, cursor: addCategoryDisabled ? "not-allowed" : "pointer", opacity: addCategoryDisabled ? 0.5 : 1 }}>
+                + Add another room type
+              </button>
+              {addCategoryDisabled && (
+                <p style={{ fontSize: "11px", color: c.muted, margin: 0 }}>
+                  {maxCategoriesReached
+                    ? `You can't have more room types than rooms booked (${options.rooms}). Remove one to add a different type.`
+                    : `All ${options.rooms} room(s) are allocated. Reduce a quantity above to free one up.`}
+                </p>
+              )}
             </div>
           )}
 
@@ -309,6 +644,56 @@ const NewBooking = () => {
                 <input id={input.id} type={input.type} placeholder={input.placeholder} onChange={handleChange} style={inputStyle} onFocus={focusInput} onBlur={blurInput} disabled={isProcessing} />
               </div>
             ))}
+          </div>
+
+          {/* Discount */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "1rem", borderRadius: "12px", border: `1px solid ${c.border}`, background: c.surface }}>
+            <label style={labelStyle}>Discount</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <select value={discount.type} onChange={(e) => setDiscount((prev) => ({ ...prev, type: e.target.value, value: e.target.value === "none" ? "" : prev.value }))}
+                style={{ ...inputStyle, cursor: "pointer" }} onFocus={focusInput} onBlur={blurInput}>
+                <option value="none">No discount</option>
+                <option value="percentage">Percentage (%)</option>
+                <option value="fixed">Fixed amount (₦)</option>
+              </select>
+              <input type="number" min={0} max={discount.type === "percentage" ? 100 : undefined}
+                placeholder={discount.type === "percentage" ? "e.g. 10" : "e.g. 5000"}
+                value={discount.value} disabled={discount.type === "none"}
+                onChange={(e) => setDiscount((prev) => ({ ...prev, value: e.target.value }))}
+                style={{ ...inputStyle, opacity: discount.type === "none" ? 0.5 : 1 }} onFocus={focusInput} onBlur={blurInput} />
+            </div>
+            {discount.type !== "none" && (
+              <input type="text" placeholder="Reason (optional)" value={discount.reason}
+                onChange={(e) => setDiscount((prev) => ({ ...prev, reason: e.target.value }))}
+                style={inputStyle} onFocus={focusInput} onBlur={blurInput} />
+            )}
+          </div>
+
+          {/* Payment */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "1rem", borderRadius: "12px", border: `1px solid ${c.border}`, background: c.surface }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: c.text, margin: 0 }}>Paid in Full</p>
+                <p style={{ fontSize: "11px", color: c.muted, margin: "2px 0 0" }}>
+                  {isCheckInToday
+                    ? "Full payment required — part payment is only available for future check-in dates."
+                    : "Turn off to record a down payment / deposit instead"}
+                </p>
+              </div>
+              <button type="button" onClick={() => setFullyPaid((prev) => !prev)} role="switch" aria-checked={fullyPaid} disabled={isProcessing || isCheckInToday}
+                style={{ width: "44px", height: "24px", borderRadius: "99px", border: "none", cursor: (isProcessing || isCheckInToday) ? "not-allowed" : "pointer", flexShrink: 0, background: fullyPaid ? currentColor : isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", position: "relative", transition: "background 0.2s", opacity: (isProcessing || isCheckInToday) ? 0.6 : 1 }}>
+                <span style={{ position: "absolute", top: "3px", left: fullyPaid ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+              </button>
+            </div>
+            {!fullyPaid && !isCheckInToday && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={labelStyle}>Amount Paid Now (₦)</label>
+                <input type="number" min={0} max={totalPrice} placeholder="0"
+                  value={amountPaidInput}
+                  onChange={(e) => setAmountPaidInput(e.target.value)}
+                  style={inputStyle} onFocus={focusInput} onBlur={blurInput} />
+              </div>
+            )}
           </div>
 
           {/* Checked in */}

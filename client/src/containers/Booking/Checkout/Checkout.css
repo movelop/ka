@@ -97,11 +97,19 @@
     text-align: right;
 }
 
-/* Total row bold */
-.checkoutRoomInfo > div > span[style] {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 600;
+/* Total row — explicit class rather than an inline-style hook, so it's
+   correct regardless of what other rows (alerts, extra categories) surround it */
+.checkoutRoomInfo > div.totalRow {
+    border-top: 1px solid rgba(184, 145, 63, 0.3);
+    border-bottom: none;
+    margin-top: 0.5rem;
+    padding-top: 1.1rem;
+}
+
+.totalAmount {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 22px !important;
+    font-weight: 600 !important;
 }
 
 /* Alert */
@@ -195,6 +203,17 @@
     border-bottom-color: var(--gold-color, #b8913f);
 }
 
+/* Number inputs (e.g. extra-category room quantity) shouldn't keep the
+   native spinner look — style them the same as text inputs */
+input.guestDetailsInput[type="number"] {
+    -moz-appearance: textfield;
+}
+input.guestDetailsInput[type="number"]::-webkit-outer-spin-button,
+input.guestDetailsInput[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 /* ================================
    ROOM NUMBER SELECTION
 ================================= */
@@ -257,6 +276,127 @@
 .optionsBoxes > .checkbox:disabled {
     opacity: 0.3;
     cursor: not-allowed;
+}
+
+/* ================================
+   EXTRA ROOM CATEGORIES
+================================= */
+.extraCategoryContainer {
+    width: 100%;
+    background: #faf7f2;
+    border: 1px solid rgba(184, 145, 63, 0.25);
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: relative;
+}
+
+/* Fields inside a category card go full-width, not the 47% two-column
+   layout used by the outer form grid */
+.extraCategoryContainer .guestFormInput,
+.extraCategoryContainer .selectRoomContainer {
+    width: 100%;
+}
+
+.extraCategoryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.extraCategoryHeader > label {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-color, #b8913f);
+}
+
+.removeCategory {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #b94a48;
+    transition: opacity 0.2s ease;
+}
+
+.removeCategory:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+.categorySelect {
+    border: none;
+    border-bottom: 1px solid rgba(26, 26, 24, 0.2);
+    padding: 10px 0;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--primary-color, #1a1a18);
+    background: transparent;
+    outline: none;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.categorySelect:focus {
+    border-bottom-color: var(--gold-color, #b8913f);
+}
+
+.categorySelect:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.addCategoryContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.addCategory {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px dashed rgba(184, 145, 63, 0.55);
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-color, #b8913f);
+    padding: 0.8em 2em;
+    cursor: pointer;
+    transition: background 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+}
+
+.addCategory:hover:not(:disabled) {
+    background: rgba(184, 145, 63, 0.08);
+    border-color: var(--gold-color, #b8913f);
+}
+
+.addCategory:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.allocationHint {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(26, 26, 24, 0.5);
+    line-height: 1.5;
+    margin: 0;
 }
 
 /* ================================
@@ -329,13 +469,18 @@
     .checkoutRoomInfo > h1 { font-size: 14px; }
     .checkoutRoomInfo > div > h4 { font-size: 14px; }
     .checkoutRoomInfo > div > span { font-size: 18px; }
+    .totalAmount { font-size: 30px !important; }
     .guestDetails { max-width: 960px; }
     .guestDetails > h1 { font-size: 48px; }
     .guestFormInput > label,
-    .selectRoomContainer > label { font-size: 14px; }
-    .guestDetailsInput { font-size: 20px; padding: 14px 0; }
+    .selectRoomContainer > label,
+    .extraCategoryHeader > label { font-size: 14px; }
+    .guestDetailsInput,
+    .categorySelect { font-size: 20px; padding: 14px 0; }
     .optionsBoxes > label { font-size: 18px; }
     .continue, .pay { font-size: 16px; padding: 1em 3em; }
+    .addCategory { font-size: 14px; padding: 1em 2.5em; }
+    .allocationHint { font-size: 14px; }
 }
 
 @media screen and (max-width: 850px) {
@@ -350,6 +495,8 @@
     .guestDetails > h1 { font-size: 24px; }
     .continue, .pay { width: 100%; font-size: 11px; }
     .guestFormButton { justify-content: stretch; }
+    .extraCategoryContainer { padding: 1.25rem; }
+    .addCategory { width: 100%; text-align: center; }
 }
 
 @media screen and (max-width: 385px) {
@@ -361,4 +508,5 @@
     .checkout { margin-top: 0; padding: 0; }
     .checkoutRoomInfo { border: none; background: #fff; }
     .checkoutRoomInfo::before { display: none; }
+    .addCategoryContainer, .addCategory { display: none; }
 }
