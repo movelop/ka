@@ -27,6 +27,7 @@ const BookingReceipt = () => {
 
   /* ─────────────────────────────────────────────────────
      THERMAL PRINT HTML
+     • For the "Print" button — an actual 80mm receipt printer
      • Everything black, bold, no colour, no background tints
      • Logo converted to black via CSS filter
      • Wide letter-spacing removed — thermal fonts render better tight
@@ -272,6 +273,261 @@ const BookingReceipt = () => {
 </html>`;
   };
 
+  /* ─────────────────────────────────────────────────────
+     FULL-PAGE PDF HTML
+     • For the "Download PDF" button — a normal, letter/A4-sized document
+     • Mirrors the on-screen luxury design (gold accents, serif totals,
+       cream card) instead of the black-and-white thermal layout
+     • Uses @page so browsers printing-to-PDF pick a sane page size/margin
+       instead of stretching the thermal card across a full sheet
+  ───────────────────────────────────────────────────── */
+  const buildPdfHTML = (b, rows, balanceDueNotice) => {
+    const logoSrc = images?.logo || "";
+    const detailRows = rows.slice(0, -1);
+    const totalRow = rows[rows.length - 1];
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Receipt · K.A Hotel &amp; Suites</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="${FONT_URL}" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page {
+      size: A4;
+      margin: 18mm 16mm;
+    }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: #fff;
+      color: #1a1a18;
+      display: flex;
+      justify-content: center;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 620px;
+      background: #faf7f2;
+      border: 1px solid rgba(184,145,63,0.25);
+      padding: 3rem 3.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(to right, #b8913f, transparent);
+    }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2rem;
+    }
+    .logo-img {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid rgba(184,145,63,0.35);
+    }
+    .logo-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .logo-name {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #b8913f;
+    }
+
+    /* ── Badges ── */
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #b8913f;
+    }
+
+    /* ── Confirmation code ── */
+    .code-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(26,26,24,0.45);
+      margin-bottom: 0.4rem;
+      text-align: center;
+    }
+    .code-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 40px;
+      letter-spacing: 0.12em;
+      color: #1a1a18;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    /* ── Balance due notice ── */
+    .balance-notice {
+      width: 100%;
+      margin-bottom: 1.5rem;
+      padding: 0.85rem 1.1rem;
+      background: rgba(184,145,63,0.1);
+      border-left: 2px solid #b8913f;
+      font-size: 12px;
+      font-weight: 500;
+      color: #8a6a2c;
+      line-height: 1.6;
+    }
+
+    /* ── Detail rows ── */
+    .rows { width: 100%; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid rgba(26,26,24,0.08);
+      gap: 1rem;
+    }
+    .row-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(26,26,24,0.5);
+      flex-shrink: 0;
+    }
+    .row-value {
+      font-size: 13px;
+      font-weight: 400;
+      color: #1a1a18;
+      text-align: right;
+    }
+
+    /* ── Total row ── */
+    .row-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      width: 100%;
+      padding: 1rem 0 0;
+      margin-top: 0.5rem;
+      border-top: 1px solid rgba(184,145,63,0.35);
+      gap: 1rem;
+    }
+    .row-total .row-label { font-size: 12px; color: rgba(26,26,24,0.5); }
+    .row-total .row-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    /* ── Alerts ── */
+    .alert {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.85rem 1.1rem;
+      background: rgba(175,45,45,0.06);
+      border-left: 2px solid #b94a48;
+      font-size: 11px;
+      font-weight: 300;
+      color: #b94a48;
+      line-height: 1.6;
+    }
+    .alert:first-of-type { margin-top: 1.25rem; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 2rem;
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(26,26,24,0.5);
+      text-align: center;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    @media print {
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="top-bar"></div>
+
+    <div class="logo-wrap">
+      <div class="logo-img">
+        <img src="${logoSrc}" alt="K.A Hotel and Suites"/>
+      </div>
+      <span class="logo-name">K.A Hotel &amp; Suites</span>
+    </div>
+
+    ${(b.checkedIn || b.paymentStatus === "paid") ? `
+    <div class="badges">
+      ${b.checkedIn ? `<span class="badge">✓ Checked In</span>` : ""}
+      ${b.paymentStatus === "paid" ? `<span class="badge">✓ Paid In Full</span>` : ""}
+    </div>` : ""}
+
+    <p class="code-label">Confirmation Code</p>
+    <p class="code-value">${b.confirmation || "—"}</p>
+
+    ${balanceDueNotice ? `<div class="balance-notice">⚠ ${balanceDueNotice}</div>` : ""}
+
+    <div class="rows">
+      ${detailRows.map(({ label, value }) => `
+        <div class="row">
+          <span class="row-label">${label}</span>
+          <span class="row-value">${value ?? "—"}</span>
+        </div>`).join("")}
+    </div>
+
+    <div class="row-total">
+      <span class="row-label">${totalRow.label}</span>
+      <span class="row-value">${totalRow.value}</span>
+    </div>
+
+    <div class="alert">⚠ Damage to any hotel property will be charged to the room occupant.</div>
+    <div class="alert">Reservations with "non-arrival" will be forfeited if not cancelled at least 24 hours prior to the check-in date.</div>
+
+    <p class="footer">Thank you for choosing K.A Hotel &amp; Suites</p>
+  </div>
+</body>
+</html>`;
+  };
+
   /* ── Error state ── */
   if (!booking) {
     return (
@@ -354,10 +610,24 @@ const BookingReceipt = () => {
     { label: "Total Amount", value: formatNaira(totalAmount) },
   ];
 
-  /* ── Print handler ── */
+  /* ── Print handler (thermal receipt printer) ── */
   const handlePrint = () => {
     const html = buildPrintHTML(booking, rows, balanceDueNotice);
     const win  = window.open("", "_blank", "width=500,height=900");
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    win.onload = () => setTimeout(() => { win.print(); win.close(); }, 800);
+    setTimeout(() => { if (!win.closed) { win.print(); win.close(); } }, 1800);
+  };
+
+  /* ── Download PDF handler (normal full-page document) ──
+     No PDF library involved — this opens the full-page template and
+     triggers the browser's print dialog, where "Save as PDF" produces a
+     properly laid-out A4 page instead of the narrow thermal receipt. */
+  const handleDownloadPDF = () => {
+    const html = buildPdfHTML(booking, rows, balanceDueNotice);
+    const win  = window.open("", "_blank", "width=900,height=1100");
     win.document.write(html);
     win.document.close();
     win.focus();
@@ -417,7 +687,7 @@ const BookingReceipt = () => {
               onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}>
               <BsPrinterFill style={{ fontSize: "14px" }} /> Print
             </button>
-            <button onClick={handlePrint} style={primaryBtn}
+            <button onClick={handleDownloadPDF} style={primaryBtn}
               onMouseEnter={(e) => e.currentTarget.style.opacity = "0.9"}
               onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}>
               <MdDownload style={{ fontSize: "16px" }} /> Download PDF

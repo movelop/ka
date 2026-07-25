@@ -422,17 +422,36 @@ export const getLatestBookings = async (req, res, next) => {
  * actually collected (amountPaid) — these can diverge now that partial /
  * down payments exist.
  */
+/**
+ * GET MONTHLY INCOME (Unified for old + new schema)
+ */
 export const getIncome = async (req, res, next) => {
   try {
     const income = await Booking.aggregate([
-      { $match: { cancelled: false } },
+      { $match: { cancelled: { $ne: true }, status: { $ne: "cancelled" } } },
       {
         $group: {
           _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-          totalRevenue: { $sum: "$totalPrice" },
-          totalCollected: { $sum: "$amountPaid" },
-          totalOutstanding: { $sum: "$balanceDue" },
-          totalDiscountGiven: { $sum: "$discount.amount" },
+          total: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$totalPrice", false] },
+                "$totalPrice",
+                "$price",
+              ],
+            },
+          },
+          totalCollected: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$amountPaid", false] },
+                "$amountPaid",
+                "$price",
+              ],
+            },
+          },
+          totalOutstanding: { $sum: { $ifNull: ["$balanceDue", 0] } },
+          totalDiscountGiven: { $sum: { $ifNull: ["$discount.amount", 0] } },
           count: { $sum: 1 },
         },
       },
@@ -446,19 +465,35 @@ export const getIncome = async (req, res, next) => {
 };
 
 /**
- * GET YEARLY INCOME (ADMIN)
+ * GET YEARLY INCOME (Unified for old + new schema)
  */
 export const getYearlyIncome = async (req, res, next) => {
   try {
     const income = await Booking.aggregate([
-      { $match: { cancelled: false } },
+      { $match: { cancelled: { $ne: true }, status: { $ne: "cancelled" } } },
       {
         $group: {
           _id: { $year: "$createdAt" },
-          totalRevenue: { $sum: "$totalPrice" },
-          totalCollected: { $sum: "$amountPaid" },
-          totalOutstanding: { $sum: "$balanceDue" },
-          totalDiscountGiven: { $sum: "$discount.amount" },
+          total: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$totalPrice", false] },
+                "$totalPrice",
+                "$price",
+              ],
+            },
+          },
+          totalCollected: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$amountPaid", false] },
+                "$amountPaid",
+                "$price",
+              ],
+            },
+          },
+          totalOutstanding: { $sum: { $ifNull: ["$balanceDue", 0] } },
+          totalDiscountGiven: { $sum: { $ifNull: ["$discount.amount", 0] } },
           count: { $sum: 1 },
         },
       },
@@ -470,6 +505,7 @@ export const getYearlyIncome = async (req, res, next) => {
     next(error);
   }
 };
+
 
 /**
  * GET BOOKINGS WITH OUTSTANDING BALANCE (ADMIN)
@@ -495,35 +531,56 @@ export const getOutstandingBalances = async (req, res, next) => {
 /**
  * GET ALL CUSTOMERS (deduplicated by phone)
  */
+/**
+ * GET ALL CUSTOMERS (deduplicated by phone)
+ * Works across old + new schema formats.
+ */
 export const getCustomers = async (req, res, next) => {
   try {
     const customers = await Booking.aggregate([
-      // Only non-cancelled bookings
-      { $match: { cancelled: false } },
+      // Only non-cancelled bookings (support both old + new flags)
+      { $match: { cancelled: { $ne: true }, status: { $ne: "cancelled" } } },
 
       // Sort by latest booking first so $first picks the most recent data
       { $sort: { createdAt: -1 } },
 
-      // Group by phone — collate name, address, email from latest booking
+      // Group by normalized phone
       {
         $group: {
           _id: {
-            // Normalize phone: strip spaces/dashes for dedup comparison
             phone: {
               $trim: {
                 input: { $replaceAll: { input: "$phone", find: " ", replacement: "" } }
               }
             }
           },
-          firstName:    { $first: "$firstName" },
-          lastName:     { $first: "$lastName" },
-          phone:        { $first: "$phone" },
-          email:        { $first: "$email" },
-          address:      { $first: "$address" },
+          firstName: { $first: "$firstName" },
+          lastName: { $first: "$lastName" },
+          phone: { $first: "$phone" },
+          email: { $first: "$email" },
+          address: { $first: "$address" },
           totalBookings: { $sum: 1 },
-          totalSpent:   { $sum: "$totalPrice" },
-          totalPaid:    { $sum: "$amountPaid" },
-          lastBooking:  { $first: "$createdAt" },
+          // Use totalPrice if present, otherwise fallback to price
+          totalSpent: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$totalPrice", false] },
+                "$totalPrice",
+                "$price",
+              ],
+            },
+          },
+          // Use amountPaid if present, otherwise fallback to price
+          totalPaid: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$amountPaid", false] },
+                "$amountPaid",
+                "$price",
+              ],
+            },
+          },
+          lastBooking: { $first: "$createdAt" },
         },
       },
 
@@ -531,15 +588,15 @@ export const getCustomers = async (req, res, next) => {
       {
         $project: {
           _id: 0,
-          firstName:     1,
-          lastName:      1,
-          phone:         1,
-          email:         1,
-          address:       1,
+          firstName: 1,
+          lastName: 1,
+          phone: 1,
+          email: 1,
+          address: 1,
           totalBookings: 1,
-          totalSpent:    1,
-          totalPaid:     1,
-          lastBooking:   1,
+          totalSpent: 1,
+          totalPaid: 1,
+          lastBooking: 1,
           fullName: {
             $concat: ["$firstName", " ", { $ifNull: ["$lastName", ""] }]
           },
