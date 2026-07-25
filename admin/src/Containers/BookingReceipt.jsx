@@ -580,7 +580,7 @@ const BookingReceipt = () => {
   const hasBalanceDue = balanceDue !== null && balanceDue > 0;
 
   const balanceDueNotice = hasBalanceDue
-    ? `Balance due: ${formatNaira(balanceDue)} — collect before checkout.`
+    ? `Balance due: ${formatNaira(balanceDue)} — collect before check-in.`
     : null;
 
   const rows = [
