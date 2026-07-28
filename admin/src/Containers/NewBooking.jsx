@@ -89,8 +89,11 @@ const NewBooking = () => {
     const selected = rooms.find((r) => r._id === e.target.value);
     setRoom(selected); setSelectedRooms([]); setSelectedRoomNumbers([]);
   };
-  const updateQuantity = (field, value) =>
-    setOptions((prev) => ({ ...prev, [field]: Math.min(Math.max(prev[field] + value, 0), 5) }));
+  // Rooms needs a much higher ceiling than adults/children — a booking can
+// reasonably span far more than 5 rooms, unlike guest counts.
+const MAX_QUANTITIES = { adults: 20, children: 10, rooms: 12 };
+const updateQuantity = (field, value) =>
+    setOptions((prev) => ({ ...prev, [field]: Math.min(Math.max(prev[field] + value, 0), MAX_QUANTITIES[field]) }));
   const handleRoomNumberSelect = (e) => {
     const { checked, value, name } = e.target;
     setSelectedRooms((prev)       => checked ? [...prev, value] : prev.filter((id) => id !== value));
