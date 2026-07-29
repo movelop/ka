@@ -5,16 +5,12 @@ import { AuthContext } from '../context/AuthContextProvider';
 import { EditRoom, EditUser, SingleDetails, EditBooking, EditFacility } from '../components';
 import { useStateContext } from '../context/ContextProvider';
 
-// ─── Edit Form Map ────────────────────────────────────────────────────────────
-
 const EDIT_COMPONENTS = {
   room:     EditRoom,
   user:     EditUser,
   facility: EditFacility,
   booking:  EditBooking,
 };
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 const Single = ({ type }) => {
   const location  = useLocation();
@@ -23,8 +19,8 @@ const Single = ({ type }) => {
   const { currentColor, currentMode } = useStateContext();
   const isDark = currentMode === 'Dark';
 
-  const [edit,      setEdit]      = useState(false);
-  const [room,      setRoom]      = useState(null);
+  const [edit, setEdit] = useState(false);
+  const [room, setRoom] = useState(null);
   const [roomError, setRoomError] = useState(null);
 
   const c = {
@@ -34,16 +30,19 @@ const Single = ({ type }) => {
     muted:  isDark ? '#9ca3af' : '#6b7280',
   };
 
-  /* ── Fetch room for booking type ── */
+  // Fetch room image for bookings (legacy or new schema)
   useEffect(() => {
-    if (type !== 'booking' || !user?.token || !data?.roomTitle) return;
+    if (type !== 'booking' || !user?.token) return;
+    const roomTitle = data?.roomTitle || data?.rooms?.[0]?.roomTitle;
+    if (!roomTitle) return;
+
     const fetchRoom = async () => {
       setRoomError(null);
       try {
         const res = await api.get('/rooms', {
           headers: { token: `Bearer ${user.token}` },
         });
-        const match = (res.data?.rooms || []).find((r) => r.title === data.roomTitle);
+        const match = (res.data?.rooms || []).find((r) => r.title === roomTitle);
         setRoom(match ?? null);
       } catch (err) {
         console.error('Failed to fetch room:', err);
@@ -51,14 +50,13 @@ const Single = ({ type }) => {
       }
     };
     fetchRoom();
-  }, [type, data?.roomTitle, user?.token]);
+  }, [type, data, user?.token]);
 
   const EditComponent = EDIT_COMPONENTS[type] ?? null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-      {/* ── Info card ── */}
+      {/* Info card */}
       <div style={{
         margin: '1.5rem',
         marginTop: '6rem',
@@ -68,7 +66,6 @@ const Single = ({ type }) => {
         border: `1px solid ${c.border}`,
         position: 'relative',
       }}>
-
         {/* Edit toggle */}
         <button
           type="button"
@@ -83,17 +80,6 @@ const Single = ({ type }) => {
               ? isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)'
               : `${currentColor}15`,
             color: edit ? '#ef4444' : currentColor,
-            transition: 'background 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = edit
-              ? 'rgba(239,68,68,0.2)'
-              : `${currentColor}25`;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = edit
-              ? isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)'
-              : `${currentColor}15`;
           }}
         >
           {edit ? 'Close ✕' : 'Edit →'}
@@ -115,7 +101,6 @@ const Single = ({ type }) => {
         {/* Error */}
         {roomError && (
           <div role="alert" style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
             padding: '10px 14px', borderRadius: '10px',
             marginBottom: '1rem', fontSize: '13px',
             background: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)',
@@ -126,14 +111,10 @@ const Single = ({ type }) => {
           </div>
         )}
 
-        <SingleDetails
-          type={type}
-          data={data}
-          img={room?.images?.[0] ?? null}
-        />
+        <SingleDetails type={type} data={data} img={room?.images?.[0] ?? null} />
       </div>
 
-      {/* ── Edit card ── */}
+      {/* Edit card */}
       {edit && EditComponent && (
         <div style={{
           margin: '0 1.5rem 1.5rem',
@@ -141,12 +122,10 @@ const Single = ({ type }) => {
           background: c.bg,
           borderRadius: '20px',
           border: `1px solid ${c.border}`,
-          animation: 'fadeIn 0.2s ease-out both',
         }}>
           <EditComponent item={data} setEdit={setEdit} />
         </div>
       )}
-
     </div>
   );
 };
