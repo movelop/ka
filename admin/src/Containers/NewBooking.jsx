@@ -348,7 +348,7 @@ const updateQuantity = (field, value) =>
         ? {
             downPayment: {
               amount: effectiveAmountPaid,
-              method: "cash",
+              method: "Transfer",
             },
           }
         : {}),
