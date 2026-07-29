@@ -17,6 +17,33 @@ const formatNGN = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const MONTHS = [
+  "Jan","Feb","Mar","Apr","May","Jun",
+  "Jul","Aug","Sep","Oct","Nov","Dec",
+];
+
+/**
+ * Accepts aggregation _id shapes:
+ *  - { year: 2026, month: 7 }
+ *  - { year: 2026 }
+ *  - number (legacy)
+ * Returns a human friendly label like "Jul 2026" or "2026"
+ */
+const bucketLabel = (id) => {
+  if (id == null) return "—";
+  if (typeof id === "number") return String(id);
+  if (typeof id === "object") {
+    const year = typeof id.year === "number" ? id.year : (typeof id._id === "number" ? id._id : null);
+    const month = typeof id.month === "number" ? id.month : null;
+    if (month && year) return `${MONTHS[month - 1] ?? "—"} ${year}`;
+    if (month) return MONTHS[month - 1] ?? "—";
+    if (year) return String(year);
+  }
+  return "—";
+};
+
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
 const CustomTooltip = ({ active, payload }) => {
@@ -36,11 +63,11 @@ const CustomTooltip = ({ active, payload }) => {
 
 // ─── Custom Legend ────────────────────────────────────────────────────────────
 
-const CustomLegend = ({ payload }) => (
+const CustomLegend = ({ payload = [] }) => (
   <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
     {payload.map((entry) => (
       <li
-        key={entry.value}
+        key={entry.value + entry.color}
         className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400"
       >
         <span
@@ -56,12 +83,16 @@ const CustomLegend = ({ payload }) => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const Piechart = ({ data = [] }) => {
-  const pieChartData = useMemo(() =>
-    data.map((item) => ({
-      name: String(item._id),
-      value: item.total,
-    })),
-  [data]);
+  // Normalize incoming aggregation items to { name, value }
+  const pieChartData = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return data.map((item) => {
+      // Prefer totalCollected, fallback to total (legacy alias), fallback to item.total
+      const value = Number(item.totalCollected ?? item.total ?? item.value ?? 0);
+      const name = bucketLabel(item._id ?? item);
+      return { name, value };
+    }).filter(d => d.value !== 0); // optionally hide zero slices
+  }, [data]);
 
   if (!pieChartData.length) {
     return (
@@ -72,35 +103,36 @@ const Piechart = ({ data = [] }) => {
   }
 
   return (
-  <div style={{ width: "100%", height: 200 }}>  {/* explicit px height, not % */}
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={pieChartData}
-          cx="50%"
-          cy="45%"
-          innerRadius={45}
-          outerRadius={65}
-          paddingAngle={4}
-          dataKey="value"
-          strokeWidth={0}
-          isAnimationActive={true}
-          animationBegin={0}
-          animationDuration={600}
-        >
-          {pieChartData.map((_, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={COLORS[index % COLORS.length]}
-            />
-          ))}
-        </Pie>
-        <Tooltip content={<CustomTooltip />} />
-        <Legend content={<CustomLegend />} />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-);
+    <div style={{ width: "100%", height: 200 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={pieChartData}
+            cx="50%"
+            cy="45%"
+            innerRadius={45}
+            outerRadius={65}
+            paddingAngle={4}
+            dataKey="value"
+            nameKey="name"
+            strokeWidth={0}
+            isAnimationActive={true}
+            animationBegin={0}
+            animationDuration={600}
+          >
+            {pieChartData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+          <Legend content={<CustomLegend />} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
 };
 
 export default Piechart;

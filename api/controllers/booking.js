@@ -427,84 +427,110 @@ export const getLatestBookings = async (req, res, next) => {
  */
 export const getIncome = async (req, res, next) => {
   try {
-    const income = await Booking.aggregate([
-      { $match: { cancelled: { $ne: true }, status: { $ne: "cancelled" } } },
+    // Build payment events: legacy -> single event { amount: price, paidAt: createdAt }
+    // new -> map payments[] to events (refunds negative), using paidAt (fallback to createdAt)
+    const pipeline = [
+      { $match: { cancelled: false } },
+      {
+        $addFields: {
+          paymentEvents: {
+            $cond: {
+              // legacy if rooms is not an array
+              if: { $not: [{ $isArray: "$rooms" }] },
+              then: [{ amount: { $ifNull: ["$price", 0] }, paidAt: "$createdAt" }],
+              else: {
+                $map: {
+                  input: { $ifNull: ["$payments", []] },
+                  as: "p",
+                  in: {
+                    amount: {
+                      $cond: [
+                        { $eq: ["$$p.type", "refund"] },
+                        { $multiply: ["$$p.amount", -1] },
+                        { $ifNull: ["$$p.amount", 0] }
+                      ]
+                    },
+                    paidAt: { $ifNull: ["$$p.paidAt", "$createdAt"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      { $unwind: "$paymentEvents" },
       {
         $group: {
-          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-          total: {
-            $sum: {
-              $cond: [
-                { $ifNull: ["$totalPrice", false] },
-                "$totalPrice",
-                "$price",
-              ],
-            },
-          },
-          totalCollected: {
-            $sum: {
-              $cond: [
-                { $ifNull: ["$amountPaid", false] },
-                "$amountPaid",
-                "$price",
-              ],
-            },
-          },
-          totalOutstanding: { $sum: { $ifNull: ["$balanceDue", 0] } },
-          totalDiscountGiven: { $sum: { $ifNull: ["$discount.amount", 0] } },
-          count: { $sum: 1 },
-        },
+          _id: { year: { $year: "$paymentEvents.paidAt" }, month: { $month: "$paymentEvents.paidAt" } },
+          totalCollected: { $sum: "$paymentEvents.amount" },
+          countPayments: { $sum: 1 }
+        }
       },
-      { $sort: { "_id.year": -1, "_id.month": -1 } },
-    ]);
+      { $sort: { "_id.year": -1, "_id.month": -1 } }
+    ];
 
+    const income = await Booking.aggregate(pipeline);
+
+    // Return monthly collected totals (legacy price events included)
     res.status(200).json({ success: true, income });
   } catch (error) {
     next(error);
   }
 };
+
 
 /**
  * GET YEARLY INCOME (Unified for old + new schema)
  */
 export const getYearlyIncome = async (req, res, next) => {
   try {
-    const income = await Booking.aggregate([
-      { $match: { cancelled: { $ne: true }, status: { $ne: "cancelled" } } },
+    const pipeline = [
+      { $match: { cancelled: false } },
+      {
+        $addFields: {
+          paymentEvents: {
+            $cond: {
+              if: { $not: [{ $isArray: "$rooms" }] },
+              then: [{ amount: { $ifNull: ["$price", 0] }, paidAt: "$createdAt" }],
+              else: {
+                $map: {
+                  input: { $ifNull: ["$payments", []] },
+                  as: "p",
+                  in: {
+                    amount: {
+                      $cond: [
+                        { $eq: ["$$p.type", "refund"] },
+                        { $multiply: ["$$p.amount", -1] },
+                        { $ifNull: ["$$p.amount", 0] }
+                      ]
+                    },
+                    paidAt: { $ifNull: ["$$p.paidAt", "$createdAt"] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      { $unwind: "$paymentEvents" },
       {
         $group: {
-          _id: { $year: "$createdAt" },
-          total: {
-            $sum: {
-              $cond: [
-                { $ifNull: ["$totalPrice", false] },
-                "$totalPrice",
-                "$price",
-              ],
-            },
-          },
-          totalCollected: {
-            $sum: {
-              $cond: [
-                { $ifNull: ["$amountPaid", false] },
-                "$amountPaid",
-                "$price",
-              ],
-            },
-          },
-          totalOutstanding: { $sum: { $ifNull: ["$balanceDue", 0] } },
-          totalDiscountGiven: { $sum: { $ifNull: ["$discount.amount", 0] } },
-          count: { $sum: 1 },
-        },
+          _id: { year: { $year: "$paymentEvents.paidAt" } },
+          totalCollected: { $sum: "$paymentEvents.amount" },
+          countPayments: { $sum: 1 }
+        }
       },
-      { $sort: { _id: -1 } },
-    ]);
+      { $sort: { "_id.year": -1 } }
+    ];
+
+    const income = await Booking.aggregate(pipeline);
 
     res.status(200).json({ success: true, income });
   } catch (error) {
     next(error);
   }
 };
+
 
 
 /**

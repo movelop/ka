@@ -10,6 +10,11 @@ import {
 } from "recharts";
 import { useStateContext } from "../../context/ContextProvider";
 
+const MONTHS = [
+  "Jan","Feb","Mar","Apr","May","Jun",
+  "Jul","Aug","Sep","Oct","Nov","Dec",
+];
+
 const formatNGN = (value) =>
   new Intl.NumberFormat("en-NG", {
     style: "currency",
@@ -17,10 +22,32 @@ const formatNGN = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Accepts aggregation _id shapes:
+ *  - { year: 2026, month: 7 }
+ *  - { year: 2026 }
+ *  - number (legacy)
+ * Returns { label: string, year: number|null, month: number|null }
+ */
+const parseBucket = (id) => {
+  if (id == null) return { label: "—", year: null, month: null };
+  if (typeof id === "number") return { label: String(id), year: id, month: null };
+  if (typeof id === "object") {
+    const year = typeof id.year === "number" ? id.year : (typeof id._id === "number" ? id._id : null);
+    const month = typeof id.month === "number" ? id.month : null;
+    if (month && year) return { label: `${MONTHS[month - 1] ?? "—"} ${year}`, year, month };
+    if (year) return { label: String(year), year, month: null };
+  }
+  return { label: "—", year: null, month: null };
+};
+
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const point = payload[0];
   return (
     <div
       className="
@@ -32,11 +59,11 @@ const CustomTooltip = ({ active, payload, label }) => {
     >
       <p className="text-gray-400 dark:text-gray-500 mb-1 font-medium">{label}</p>
       <p className="text-gray-800 dark:text-gray-100 font-bold text-sm">
-        {formatNGN(payload[0].value)}
+        {formatNGN(point.value)}
       </p>
-      {payload[0].payload?.count !== undefined && (
+      {point.payload?.count !== undefined && (
         <p className="text-gray-400 dark:text-gray-500 mt-1">
-          {payload[0].payload.count} bookings
+          {point.payload.count} payments
         </p>
       )}
     </div>
@@ -51,7 +78,7 @@ const CustomDot = ({ cx, cy, payload, maxTotal, currentColor }) => {
   return (
     <g>
       <circle cx={cx} cy={cy} r={6} fill={currentColor} />
-      <circle cx={cx} cy={cy} r={10} fill={currentColor} fillOpacity={0.2} />
+      <circle cx={cx} cy={cy} r={10} fill={currentColor} fillOpacity={0.18} />
     </g>
   );
 };
@@ -62,15 +89,29 @@ const LineChart = ({ data = [] }) => {
   const { currentMode, currentColor } = useStateContext();
   const isDark = currentMode === "Dark";
 
-  const chartData = useMemo(() =>
-    data.map((item) => ({
-      year:  item._id,
-      total: item.total,
-      count: item.count,
-    })),
-  [data]);
+  // Normalize incoming aggregation items to { name, total, count }
+  const chartData = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return data.map((item) => {
+      // Prefer totalCollected (monthly/collected), fallback to total (legacy alias)
+      const total = Number(item.totalCollected ?? item.total ?? 0);
+      const count = Number(item.countPayments ?? item.count ?? 0);
+      const parsed = parseBucket(item._id ?? item);
+      return {
+        name: parsed.label,
+        total,
+        count,
+        // keep raw _id for any further needs
+        _id: item._id ?? item,
+      };
+    });
+  }, [data]);
 
-  const maxTotal  = useMemo(() => Math.max(...chartData.map((d) => d.total), 0), [chartData]);
+  const maxTotal = useMemo(() => {
+    if (!chartData.length) return 0;
+    return Math.max(...chartData.map((d) => d.total), 0);
+  }, [chartData]);
+
   const gridColor = isDark ? "#33373E" : "#f3f4f6";
   const axisColor = isDark ? "#6b7280" : "#9ca3af";
 
@@ -87,12 +128,10 @@ const LineChart = ({ data = [] }) => {
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 16, right: 16, left: 8, bottom: 0 }}>
           <defs>
-            {/* Main gradient fill */}
             <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor={currentColor} stopOpacity={0.25} />
+              <stop offset="0%" stopColor={currentColor} stopOpacity={0.25} />
               <stop offset="100%" stopColor={currentColor} stopOpacity={0} />
             </linearGradient>
-            {/* Glow filter on the stroke line */}
             <filter id="lineGlow">
               <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
@@ -102,14 +141,10 @@ const LineChart = ({ data = [] }) => {
             </filter>
           </defs>
 
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke={gridColor}
-            vertical={false}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
 
           <XAxis
-            dataKey="year"
+            dataKey="name"
             tick={{ fill: axisColor, fontSize: 12 }}
             axisLine={false}
             tickLine={false}
@@ -147,11 +182,7 @@ const LineChart = ({ data = [] }) => {
             fillOpacity={1}
             filter="url(#lineGlow)"
             dot={(props) => (
-              <CustomDot
-                {...props}
-                maxTotal={maxTotal}
-                currentColor={currentColor}
-              />
+              <CustomDot {...props} maxTotal={maxTotal} currentColor={currentColor} />
             )}
             activeDot={{
               r: 5,
