@@ -3,7 +3,7 @@ import { HiOutlineSearch } from 'react-icons/hi';
 
 import { Footer, HeadingSmall } from '../../components';
 import { images } from '../../Data/dummy';
-import './Menu.css';
+import './menu.css';
 
 // ─── Kitchen Data ──────────────────────────────────────────────────────────────
 
