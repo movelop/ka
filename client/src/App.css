@@ -26,3 +26,35 @@
       transform: scale(1);
   }
 }
+
+/* ================================
+   ROUTE LOADER
+   Shared Suspense fallback shown briefly while any route's code chunk
+   is being fetched — the same spinner appears for every page, so no
+   individual page needs its own loading state.
+================================= */
+.routeLoader {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.routeLoader__ring {
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(26, 26, 24, 0.1);
+  border-top-color: var(--gold-color, #b8913f);
+  border-radius: 50%;
+  animation: routeLoaderSpin 0.85s linear infinite;
+}
+
+@keyframes routeLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routeLoader__ring {
+    animation-duration: 2.5s;
+  }
+}
