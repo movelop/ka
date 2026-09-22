@@ -62,6 +62,8 @@ const NewBooking = () => {
   // Admin-only down payment — defaults to fully paid; toggle off to record a partial deposit
   const [fullyPaid, setFullyPaid]                     = useState(true);
   const [amountPaidInput, setAmountPaidInput]         = useState("");
+  const [paymentType, setPaymentType]                 = useState("deposit");
+  const [paymentMethod, setPaymentMethod]             = useState("cash");
 
   const { data } = useFetch("/rooms");
 
@@ -101,21 +103,21 @@ const updateQuantity = (field, value) =>
   };
 
   const isRoomAvailable = (roomNumber) => {
-    const startTime    = dates[0].startDate.getTime();
-    const endTime      = dates[0].endDate.getTime();
-    const endtimeNoon  = new Date(endTime).setHours(12, 0, 0, 0);
-    const endDateNoon  = new Date(endtimeNoon).getTime();
+    // Check-in is at 12 noon on start date
+    const startDateNoon = new Date(dates[0].startDate).setHours(12, 0, 0, 0);
+    
+    // Check-out is at 12 noon on end date
+    const endDateNoon = new Date(dates[0].endDate).setHours(12, 0, 0, 0);
 
     const unavailable = roomNumber.unavailableDates.map((d) => {
       const unavailableTime = new Date(d).getTime();
       return new Date(unavailableTime).setHours(12, 0, 0, 0);
     });
 
-    return !unavailable.some((checkoutTime) => {
-      return (
-        (checkoutTime >= startTime && checkoutTime < endTime) ||
-        (checkoutTime >= endTime   && checkoutTime < endDateNoon)
-      );
+    return !unavailable.some((blockedTime) => {
+      // Conflict only if blocked time falls within booking period
+      // Using < for end date so checkout at noon doesn't conflict with next check-in at noon
+      return (blockedTime >= startDateNoon && blockedTime < endDateNoon);
     });
   };
 
@@ -348,7 +350,8 @@ const updateQuantity = (field, value) =>
         ? {
             downPayment: {
               amount: effectiveAmountPaid,
-              method: "Transfer",
+              method: paymentMethod,
+              type: paymentType,
             },
           }
         : {}),
@@ -688,6 +691,28 @@ const updateQuantity = (field, value) =>
                 <span style={{ position: "absolute", top: "3px", left: fullyPaid ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
               </button>
             </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={labelStyle}>Payment Type</label>
+              <select value={paymentType} onChange={(e) => setPaymentType(e.target.value)}
+                style={{ ...inputStyle, cursor: "pointer" }} onFocus={focusInput} onBlur={blurInput}>
+                <option value="deposit">Deposit</option>
+                <option value="balance">Balance Payment</option>
+                <option value="partial">Partial Payment</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={labelStyle}>Payment Method</label>
+              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
+                style={{ ...inputStyle, cursor: "pointer" }} onFocus={focusInput} onBlur={blurInput}>
+                <option value="cash">Cash</option>
+                <option value="transfer">Transfer</option>
+                <option value="pos">POS</option>
+                <option value="paystack">Paystack</option>
+              </select>
+            </div>
+
             {!fullyPaid && !isCheckInToday && (
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <label style={labelStyle}>Amount Paid Now (₦)</label>

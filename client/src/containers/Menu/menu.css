@@ -1,0 +1,368 @@
+/* Cormorant Garamond + Jost are already loaded once globally in index.css —
+   re-importing them here would add a redundant render-blocking request. */
+
+/* ================================
+   LOADER
+================================= */
+.menuLoader {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.menuLoader__ring {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(26, 26, 24, 0.1);
+  border-top-color: var(--gold-color, #b8913f);
+  border-radius: 50%;
+  animation: menuLoaderSpin 0.85s linear infinite;
+}
+
+@keyframes menuLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+.menuLoader__text {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
+}
+
+/* ================================
+   SECTION WRAPPER
+================================= */
+.menu {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 2rem;
+}
+
+.menuContainer {
+  width: 100%;
+  max-width: 1280px;
+  margin-top: 5rem;
+  margin-bottom: 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* ================================
+   TOP — INTRO
+================================= */
+.menuTop {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.menuTop__eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold-color, #b8913f);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.menuTop h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 56px;
+  letter-spacing: 0.01em;
+  color: var(--primary-color, #1a1a18);
+  line-height: 1.05;
+}
+
+.menuTop p {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #555550;
+  max-width: 640px;
+}
+
+/* ================================
+   CONTROLS — TABS + SEARCH
+================================= */
+.menuControls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.menuTabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--primary-color, #1a1a18);
+}
+
+.menuTabs__tab {
+  background: transparent;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  padding: 13px 30px;
+  cursor: pointer;
+  transition: color 0.25s ease, background-color 0.25s ease;
+}
+
+.menuTabs__tab.active {
+  background: var(--primary-color, #1a1a18);
+  color: var(--white-color, #fff);
+}
+
+.menuSearch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+  border-bottom: 1px solid rgba(26, 26, 24, 0.2);
+  padding-bottom: 10px;
+  transition: border-color 0.3s ease;
+}
+
+.menuSearch:focus-within {
+  border-bottom-color: var(--gold-color, #b8913f);
+}
+
+.menuSearch__icon {
+  color: var(--gold-color, #b8913f);
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.menuSearch input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--primary-color, #1a1a18);
+}
+
+.menuSearch input::placeholder {
+  color: rgba(26, 26, 24, 0.3);
+}
+
+/* ================================
+   CATEGORY FILTERS
+================================= */
+.menuFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid rgba(26, 26, 24, 0.08);
+}
+
+.menuFilters__pill {
+  background: transparent;
+  border: 1px solid rgba(26, 26, 24, 0.25);
+  padding: 7px 16px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--primary-color, #1a1a18);
+  cursor: pointer;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.menuFilters__pill.active {
+  background: var(--gold-color, #b8913f);
+  border-color: var(--gold-color, #b8913f);
+  color: var(--white-color, #fff);
+}
+
+/* ================================
+   MENU BODY / CATEGORIES
+================================= */
+.menuBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.menuCategory {
+  padding-top: 2.5rem;
+  border-top: 2px solid rgba(26, 26, 24, 0.08);
+}
+
+.menuCategory:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.menuCategory__label {
+  display: inline-block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 30px;
+  color: var(--primary-color, #1a1a18);
+  margin-bottom: 1.5rem;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--gold-color, #b8913f);
+}
+
+.menuCategory__list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 3rem;
+}
+
+/* ================================
+   MENU ITEM ROW (dotted leader)
+================================= */
+.menuItemRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(26, 26, 24, 0.06);
+}
+
+.menuItemRow__name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--primary-color, #1a1a18);
+  white-space: nowrap;
+}
+
+.menuItemRow__leader {
+  flex: 1;
+  border-bottom: 1px dotted rgba(26, 26, 24, 0.35);
+  transform: translateY(-4px);
+}
+
+.menuItemRow__price {
+  font-family: 'Jost', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--gold-color, #b8913f);
+  white-space: nowrap;
+}
+
+/* ================================
+   SWALLOW & SOUP COMBOS
+================================= */
+.menuCombos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem 3rem;
+}
+
+.menuCombo {
+  border-top: 3px solid var(--gold-color, #b8913f);
+  padding-top: 1rem;
+}
+
+.menuCombo h4 {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--primary-color, #1a1a18);
+  margin-bottom: 0.5rem;
+}
+
+.menuCombo .menuItemRow {
+  padding: 8px 0;
+}
+
+/* ================================
+   EMPTY STATE
+================================= */
+.menuEmpty {
+  padding: 3rem 0;
+  text-align: center;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  font-style: italic;
+  color: #888880;
+}
+
+/* ================================
+   NOTE
+================================= */
+.menuNote {
+  padding-top: 2rem;
+  border-top: 1px solid rgba(26, 26, 24, 0.08);
+}
+
+.menuNote p {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #888880;
+  max-width: 720px;
+}
+
+.menuNote p strong {
+  font-weight: 500;
+  color: var(--primary-color, #1a1a18);
+}
+
+/* ================================
+   RESPONSIVE
+================================= */
+@media screen and (min-width: 2000px) {
+  .menuContainer { max-width: 1900px; }
+  .menuTop h3 { font-size: 72px; }
+  .menuTop p { font-size: 20px; max-width: 900px; }
+  .menuCategory__label { font-size: 32px; }
+  .menuItemRow__name { font-size: 22px; }
+  .menuItemRow__price { font-size: 17px; }
+}
+
+@media screen and (max-width: 1200px) {
+  .menuContainer { max-width: 960px; }
+  .menuTop h3 { font-size: 38px; }
+}
+
+@media screen and (max-width: 900px) {
+  .menuCategory__list { grid-template-columns: 1fr; }
+  .menuCombos { grid-template-columns: 1fr; }
+  .menuTop h3 { font-size: 32px; }
+}
+
+@media screen and (max-width: 550px) {
+  .menu { padding: 0 1.25rem; }
+  .menuContainer { margin-top: 3rem; margin-bottom: 4rem; gap: 2.25rem; }
+  .menuTop h3 { font-size: 26px; }
+  .menuTop p { font-size: 13px; }
+  .menuControls { align-items: flex-start; flex-direction: column; gap: 1.5rem; }
+  .menuTabs { gap: 1.75rem; }
+  .menuFilters { gap: 1.25rem; padding-bottom: 1.5rem; }
+  .menuCategory__label { font-size: 20px; }
+  .menuItemRow__name { font-size: 15px; }
+}
+
+@media screen and (max-width: 385px) {
+  .menuTop h3 { font-size: 22px; }
+}

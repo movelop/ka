@@ -9,7 +9,8 @@ import existing from '../assets//Assets/existing.jpg';
 import checkout from '../assets//Assets/checkout.jpg';         
 import confirm from '../assets//Assets/confirm.jpg';  
 import room from '../assets//Assets/room.jpg';     
-import logo from '../assets//Assets/logo.png';   
+import logo from '../assets//Assets/logo.png';  
+import menu from '../assets//Assets/menu.jpg' 
 
 export const navData = [
     {
@@ -20,6 +21,10 @@ export const navData = [
         name: 'Rooms',
         link: 'rooms',
     },
+    // {
+    //     name: 'Menu',
+    //     link: 'menu'
+    // },
     {
         name: 'Contact-us',
         link: 'contact',
@@ -39,6 +44,7 @@ export const images = {
     confirm,
     room,
     logo,
+    menu,
 };
 
 export const testimonials = [

@@ -8,3 +8,4 @@ export { default as Booking } from './Booking/Booking';
 export { default as Existing } from './Booking/Existing/Existing';
 export { default as Checkout } from './Booking/Checkout/Checkout';
 export { default as Confirmation } from './Booking/Confirmation/Confirmation';
+export { default as Menu } from './Menu/Menu';

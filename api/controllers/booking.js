@@ -40,109 +40,171 @@ const buildRoomLineItems = (rooms) => {
 
 /**
  * CREATE BOOKING (PUBLIC)
- * Now accepts multiple room categories in one reservation, an optional
- * discount, and an optional down payment made at booking time.
+ * Create Booking
+ *
+ * - Validates input minimally.
+ * - Checks availability for selected roomNumbers before saving.
+ * - Saves booking first inside a transaction, then marks roomNumbers unavailable.
+ * - Payments are flexible: method can be "cash", "transfer", "pos", "paystack", etc.
+ * - Down payment (if provided) is recorded as a payment with paidAt.
+ *
+ * Expected req.body shape (example):
+ * {
+ *   firstName, lastName, email, phone, address, identity,
+ *   startDate, endDate,
+ *   rooms: [
+ *     { roomTitle, numberOfRooms, selectedRooms: [roomNumberId,...], pricePerRoom, lineTotal }
+ *   ],
+ *   registeredBy,
+ *   downPayment: { amount, reference, method, note, paidAt },
+ *   discount: { amount, note },
+ *   notes
+ * }
  */
 export const createBooking = async (req, res, next) => {
+  const session = await mongoose.startSession();
   try {
     const {
       firstName,
       lastName,
       email,
       phone,
+      address,
       identity,
-      rooms, // [{ roomTitle, numberOfRooms, selectedRooms, roomNumbers, pricePerRoom }]
       startDate,
       endDate,
-      adults,
-      children,
+      rooms = [],
       registeredBy,
-      address,
-      discount, // optional: { type: 'percentage' | 'fixed', value, reason, approvedBy }
-      downPayment, // optional: { amount, reference, method }
+      downPayment,
+      discount,
+      notes,
     } = req.body;
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !phone ||
-      !identity ||
-      !startDate ||
-      !endDate
-    ) {
-      return next(createError(400, "Missing required booking fields"));
+    // Basic validation
+    if (!startDate || !endDate) {
+      return res.status(400).json({ success: false, message: "startDate and endDate are required." });
+    }
+    if (!Array.isArray(rooms) || rooms.length === 0) {
+      return res.status(400).json({ success: false, message: "At least one room category is required." });
     }
 
-    const roomLineItems = buildRoomLineItems(rooms);
+    // Normalize line items
+    const roomLineItems = rooms.map((r) => ({
+      roomTitle: r.roomTitle ?? "Room",
+      numberOfRooms: Number(r.numberOfRooms ?? (Array.isArray(r.selectedRooms) ? r.selectedRooms.length : 1)),
+      selectedRooms: Array.isArray(r.selectedRooms) ? r.selectedRooms : [],
+      pricePerRoom: Number(r.pricePerRoom ?? 0),
+      lineTotal: Number(r.lineTotal ?? 0),
+    }));
 
-    // Generate unique confirmation code
-    let confirmation;
-    const existingCodes = await Booking.distinct("confirmation");
-    do {
-      confirmation = generateId(12);
-    } while (existingCodes.includes(confirmation));
+    // Totals
+    const subtotal = roomLineItems.reduce((s, it) => s + (Number(it.lineTotal) || 0), 0);
+    const discountAmount = Number(discount?.amount ?? 0);
+    const totalPrice = Math.max(0, subtotal - discountAmount);
 
-    // Convert dates to timestamps
-    const dates = getDatesInRange(startDate, endDate);
+    // Build initial payments array (down payment optional)
+    const payments = [];
+    if (downPayment && Number(downPayment.amount) > 0) {
+      payments.push({
+        amount: Number(downPayment.amount),
+        reference: downPayment.reference ?? null,
+        method: downPayment.method ?? "cash",
+        type: downPayment.type ?? "deposit",
+        note: downPayment.note ?? null,
+        paidAt: downPayment.paidAt ? new Date(downPayment.paidAt) : new Date(),
+      });
+    }
 
-    // Flatten selectedRooms across every category to reserve availability
-    const allSelectedRoomIds = roomLineItems.flatMap((r) => r.selectedRooms);
+    const amountPaid = payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    const balanceDue = Math.max(0, totalPrice - amountPaid);
+    const paymentStatus = balanceDue <= 0 ? "paid" : amountPaid > 0 ? "partial" : "unpaid";
 
-    await Promise.all(
-      allSelectedRoomIds.map((roomNumberId) =>
-        Room.updateOne(
-          { "roomNumbers._id": roomNumberId },
-          { $push: { "roomNumbers.$.unavailableDates": { $each: dates } } }
-        )
-      )
-    );
+    // Prepare dates to block (ISO date strings)
+    const getDatesInRange = (s, e) => {
+      const start = new Date(s);
+      const end = new Date(e);
+      const dates = [];
+      const cur = new Date(start);
+      while (cur <= end) {
+        dates.push(new Date(cur).toISOString().split("T")[0]);
+        cur.setDate(cur.getDate() + 1);
+      }
+      return dates;
+    };
+    const datesToBlock = getDatesInRange(startDate, endDate);
 
-    // Build the booking document, then use .save() (not .create() with
-    // pre-computed totals) so the pre-save hook derives subtotal,
-    // discount.amount, totalPrice, amountPaid, balanceDue & paymentStatus.
+    // Collect all selected roomNumber ids
+    const allSelectedRoomIds = roomLineItems.flatMap((r) => r.selectedRooms || []);
+
+    // Pre-check availability: ensure none of the selected roomNumbers already have any of the dates
+    if (allSelectedRoomIds.length > 0) {
+      // Query rooms that contain any of the selected roomNumbers with conflicting unavailableDates
+      const conflictQuery = {
+        "roomNumbers._id": { $in: allSelectedRoomIds },
+        "roomNumbers.unavailableDates": { $in: datesToBlock },
+      };
+
+      const conflict = await Room.findOne(conflictQuery).lean();
+      if (conflict) {
+        return res.status(409).json({
+          success: false,
+          message: "One or more selected room numbers are no longer available for the requested dates.",
+        });
+      }
+    }
+
+    // Build booking document
     const booking = new Booking({
-      firstName,
-      lastName,
-      email: email.trim().toLowerCase(),
-      phone,
-      identity,
+      firstName: firstName ?? null,
+      lastName: lastName ?? null,
+      email: email ?? null,
+      phone: phone ?? null,
+      address: address ?? null,
+      identity: identity ?? null,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       rooms: roomLineItems,
-      startDate,
-      endDate,
-      adults,
-      children,
-      confirmation,
-      registeredBy,
-      address,
-      discount: discount?.type
-        ? {
-            type: discount.type,
-            value: Number(discount.value) || 0,
-            reason: discount.reason,
-            approvedBy: discount.approvedBy,
-          }
-        : undefined,
-      payments: downPayment?.amount
-        ? [
-            {
-              amount: Number(downPayment.amount),
-              reference: downPayment.reference,
-              method: downPayment.method || "paystack",
-              type: "deposit",
-            },
-          ]
-        : [],
-      paymentReference: downPayment?.reference,
+      subtotal,
+      discount: { amount: discountAmount, note: discount?.note ?? null },
+      totalPrice,
+      payments,
+      registeredBy: registeredBy ?? "online",
+      amountPaid,
+      balanceDue,
+      paymentStatus,
+      notes: notes ?? null,
+      cancelled: false,
+      createdAt: new Date(),
     });
 
-    await booking.save();
+    // Use transaction to save booking and update rooms atomically when possible
+    let savedBooking;
+    await session.withTransaction(async () => {
+      savedBooking = await booking.save({ session });
 
-    res.status(201).json({ success: true, booking });
-  } catch (error) {
-    next(error);
+      // Only mark rooms unavailable after booking persisted
+      if (allSelectedRoomIds.length > 0) {
+        // Use $addToSet with $each to avoid duplicate dates
+        const updates = allSelectedRoomIds.map((roomNumberId) =>
+          Room.updateOne(
+            { "roomNumbers._id": roomNumberId },
+            { $addToSet: { "roomNumbers.$.unavailableDates": { $each: datesToBlock } } },
+            { session }
+          )
+        );
+        await Promise.all(updates);
+      }
+    });
+
+    session.endSession();
+    return res.status(201).json({ success: true, booking: savedBooking });
+  } catch (err) {
+    try { await session.abortTransaction(); } catch (e) {}
+    session.endSession();
+    return next(err);
   }
 };
+
 
 /**
  * ADD PAYMENT (settle balance, or record any further payment against a booking)
