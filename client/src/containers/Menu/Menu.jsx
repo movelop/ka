@@ -64,7 +64,7 @@ const KITCHEN_CATEGORIES = [
       { name: 'Yam and Egg Sauce',    price: 5000 },
       { name: 'Yam Porridge',         price: 4000 },
       { name: 'Chicken Drum',         price: 5000 },
-      { name: 'Chicken Laps',         price: 4000 },
+      { name: 'Chicken Laps',         price: 4500 },
       { name: 'Turkey Drum',          price: 5000 },
       { name: 'Turkey Wings',         price: 4500 },
       { name: 'Chinese Rice',         price: 6000 },
@@ -72,8 +72,8 @@ const KITCHEN_CATEGORIES = [
       { name: 'Noodles',              price: 1500 },
       { name: 'Egg',                  price: 1000 },
       { name: 'Chicken Pepper Soup',  price: 6000 },
-      { name: 'Cow Tail Pepper Soup', price: 3000 },
-      { name: 'Assorted',             price: 2000 },
+      { name: 'Cow Tail Pepper Soup', price: 3500 },
+      { name: 'Assorted',             price: 3000 },
     ],
   },
 ];
@@ -122,6 +122,7 @@ const BAR_CATEGORIES = [
       { name: 'Turbo King',          price: 1500 },
       { name: 'Smirnoff Ice (Small)',price: 1000 },
       { name: 'Smirnoff Ice (Big)',  price: 2000 },
+    { name: 'Budweiser',             price: 1500 }
     ],
   },
   {
@@ -150,6 +151,7 @@ const BAR_CATEGORIES = [
       { name: 'Bacardi White',       price: 30000  },
       { name: "Gordon's Gin",        price: 10000  },
       { name: "Gordon's Orange Gin", price: 12000  },
+      { name: 'Big Ben',             price: 5000 },
       { name: 'Hennessy V.S.O.P',    price: 175000 },
       { name: 'Hennessy Cognac',     price: 40000  },
       { name: 'Sierra',              price: 28000  },
