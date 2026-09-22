@@ -17,20 +17,12 @@ const Checkout     = lazy(() => import('./containers/Booking/Checkout/Checkout')
 const Confirmation = lazy(() => import('./containers/Booking/Confirmation/Confirmation'));
 const NoPage       = lazy(() => import('./containers/NoPage/NoPage'));
 
-// Simple fallback shown for the brief moment a chunk is fetched.
+// Shown briefly for every route while its code chunk is being fetched —
+// applies uniformly to Home, Rooms, Menu, etc. so no page needs its own
+// separate loading state.
 const RouteLoader = () => (
-  <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <div
-      style={{
-        width: 40,
-        height: 40,
-        border: '2px solid rgba(26,26,24,0.1)',
-        borderTopColor: '#b8913f',
-        borderRadius: '50%',
-        animation: 'spin 0.85s linear infinite',
-      }}
-    />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  <div className="routeLoader">
+    <div className="routeLoader__ring" />
   </div>
 );
 

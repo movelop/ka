@@ -122,7 +122,7 @@ const BAR_CATEGORIES = [
       { name: 'Turbo King',          price: 1500 },
       { name: 'Smirnoff Ice (Small)',price: 1000 },
       { name: 'Smirnoff Ice (Big)',  price: 2000 },
-    { name: 'Budweiser',             price: 1500 }
+      { name: 'Budweiser',           price: 1500 },
     ],
   },
   {
@@ -151,7 +151,7 @@ const BAR_CATEGORIES = [
       { name: 'Bacardi White',       price: 30000  },
       { name: "Gordon's Gin",        price: 10000  },
       { name: "Gordon's Orange Gin", price: 12000  },
-      { name: 'Big Ben',             price: 5000 },
+      { name: 'Big Ben',             price: 5000   },
       { name: 'Hennessy V.S.O.P',    price: 175000 },
       { name: 'Hennessy Cognac',     price: 40000  },
       { name: 'Sierra',              price: 28000  },
@@ -201,12 +201,8 @@ const CategorySection = ({ category, items, search }) => {
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 const Menu = () => {
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     document.title = "K.A Hotel & Suites — Kitchen & Bar";
-    const timer = setTimeout(() => setLoading(false), 700);
-    return () => clearTimeout(timer);
   }, []);
 
   const [section, setSection] = useState('kitchen'); // 'kitchen' | 'bar'
@@ -242,17 +238,8 @@ const Menu = () => {
         c.items.some((i) => i.name.toLowerCase().includes(search.toLowerCase()))
       );
 
-  if (loading) {
-    return (
-      <div className="menuLoader">
-        <div className="menuLoader__ring" />
-        <span className="menuLoader__text">Preparing the Menu</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="scale-up-center">
+    <div>
       <HeadingSmall text="Kitchen & Bar" img={images.menu} />
 
       <div className="menu">
