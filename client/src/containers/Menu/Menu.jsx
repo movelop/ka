@@ -170,8 +170,8 @@ const fmt = (n) => `₦${n.toLocaleString()}`;
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-const MenuItemRow = ({ name, price }) => (
-  <div className="menuItemRow">
+const MenuItemRow = ({ name, price, compact }) => (
+  <div className={`menuItemRow${compact ? ' menuItemRow--compact' : ''}`}>
     <span className="menuItemRow__name">{name}</span>
     <span className="menuItemRow__leader" />
     <span className="menuItemRow__price">{fmt(price)}</span>
@@ -325,7 +325,7 @@ const Menu = () => {
                           <div key={i} className="menuCombo">
                             <h4>{combo.title}</h4>
                             {items.map((item, j) => (
-                              <MenuItemRow key={j} name={item.name} price={item.price} />
+                              <MenuItemRow key={j} name={item.name} price={item.price} compact />
                             ))}
                           </div>
                         );
