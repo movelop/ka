@@ -62,7 +62,6 @@ const buildRoomLineItems = (rooms) => {
  * }
  */
 export const createBooking = async (req, res, next) => {
-  const session = await mongoose.startSession();
   try {
     const {
       firstName,
@@ -73,6 +72,8 @@ export const createBooking = async (req, res, next) => {
       identity,
       startDate,
       endDate,
+      adults,
+      children,
       rooms = [],
       registeredBy,
       downPayment,
@@ -88,14 +89,12 @@ export const createBooking = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "At least one room category is required." });
     }
 
-    // Normalize line items
-    const roomLineItems = rooms.map((r) => ({
-      roomTitle: r.roomTitle ?? "Room",
-      numberOfRooms: Number(r.numberOfRooms ?? (Array.isArray(r.selectedRooms) ? r.selectedRooms.length : 1)),
-      selectedRooms: Array.isArray(r.selectedRooms) ? r.selectedRooms : [],
-      pricePerRoom: Number(r.pricePerRoom ?? 0),
-      lineTotal: Number(r.lineTotal ?? 0),
-    }));
+    // Normalize + validate line items. NOTE: this must derive lineTotal as
+    // pricePerRoom × numberOfRooms — the frontend only ever sends
+    // pricePerRoom (nightly rate × nights), never a precomputed lineTotal,
+    // so reading `r.lineTotal` directly here would always default to 0 and
+    // silently zero out every booking's totalPrice.
+    const roomLineItems = buildRoomLineItems(rooms);
 
     // Totals
     const subtotal = roomLineItems.reduce((s, it) => s + (Number(it.lineTotal) || 0), 0);
@@ -155,6 +154,7 @@ export const createBooking = async (req, res, next) => {
 
     // Build booking document
     const booking = new Booking({
+      confirmation: generateId(),
       firstName: firstName ?? null,
       lastName: lastName ?? null,
       email: email ?? null,
@@ -163,6 +163,8 @@ export const createBooking = async (req, res, next) => {
       identity: identity ?? null,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
+      adults: Number(adults) || 1,
+      children: Number(children) || 0,
       rooms: roomLineItems,
       subtotal,
       discount: { amount: discountAmount, note: discount?.note ?? null },
@@ -177,30 +179,30 @@ export const createBooking = async (req, res, next) => {
       createdAt: new Date(),
     });
 
-    // Use transaction to save booking and update rooms atomically when possible
-    let savedBooking;
-    await session.withTransaction(async () => {
-      savedBooking = await booking.save({ session });
+    // No native transaction here — this MongoDB deployment may be a
+    // standalone instance (transactions require a replica set / mongos).
+    // Save the booking first, then mark rooms unavailable; if that second
+    // step fails, roll back by deleting the booking we just created so we
+    // don't end up with a "paid" booking that never actually blocked rooms.
+    const savedBooking = await booking.save();
 
-      // Only mark rooms unavailable after booking persisted
-      if (allSelectedRoomIds.length > 0) {
-        // Use $addToSet with $each to avoid duplicate dates
+    if (allSelectedRoomIds.length > 0) {
+      try {
         const updates = allSelectedRoomIds.map((roomNumberId) =>
           Room.updateOne(
             { "roomNumbers._id": roomNumberId },
-            { $addToSet: { "roomNumbers.$.unavailableDates": { $each: datesToBlock } } },
-            { session }
+            { $addToSet: { "roomNumbers.$.unavailableDates": { $each: datesToBlock } } }
           )
         );
         await Promise.all(updates);
+      } catch (roomUpdateErr) {
+        await Booking.findByIdAndDelete(savedBooking._id).catch(() => {});
+        throw roomUpdateErr;
       }
-    });
+    }
 
-    session.endSession();
     return res.status(201).json({ success: true, booking: savedBooking });
   } catch (err) {
-    try { await session.abortTransaction(); } catch (e) {}
-    session.endSession();
     return next(err);
   }
 };

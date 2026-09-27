@@ -280,6 +280,9 @@ const BookingReceipt = () => {
        cream card) instead of the black-and-white thermal layout
      • Uses @page so browsers printing-to-PDF pick a sane page size/margin
        instead of stretching the thermal card across a full sheet
+     • Spacing tightened and an auto-shrink-to-fit script added so the
+       whole receipt always lands on exactly one A4 page, even with a
+       long row list (multiple room categories, discount, balance due).
   ───────────────────────────────────────────────────── */
   const buildPdfHTML = (b, rows, balanceDueNotice) => {
     const logoSrc = images?.logo || "";
@@ -298,17 +301,30 @@ const BookingReceipt = () => {
 
     @page {
       size: A4;
-      margin: 18mm 16mm;
+      margin: 14mm 16mm;
+    }
+
+    html, body {
+      height: 100%;
     }
 
     body {
       font-family: 'Jost', sans-serif;
       background: #fff;
       color: #1a1a18;
-      display: flex;
-      justify-content: center;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+
+    /* Wraps .card so that when the script below shrinks the card with a
+       CSS transform, this wrapper's height is set to match — a transform
+       alone doesn't change the box's contribution to document height,
+       which is what would otherwise leave a near-empty second page. */
+    .scale-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
     }
 
     .card {
@@ -316,11 +332,13 @@ const BookingReceipt = () => {
       max-width: 620px;
       background: #faf7f2;
       border: 1px solid rgba(184,145,63,0.25);
-      padding: 3rem 3.5rem;
+      padding: 2rem 2.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .top-bar {
@@ -335,12 +353,12 @@ const BookingReceipt = () => {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 2rem;
+      gap: 6px;
+      margin-bottom: 1.1rem;
     }
     .logo-img {
-      width: 76px;
-      height: 76px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       overflow: hidden;
       border: 2px solid rgba(184,145,63,0.35);
@@ -364,7 +382,7 @@ const BookingReceipt = () => {
       flex-wrap: wrap;
       justify-content: center;
       gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.9rem;
     }
     .badge {
       display: inline-flex;
@@ -384,30 +402,30 @@ const BookingReceipt = () => {
       letter-spacing: 0.3em;
       text-transform: uppercase;
       color: rgba(26,26,24,0.45);
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.3rem;
       text-align: center;
     }
     .code-value {
       font-family: 'Cormorant Garamond', serif;
       font-weight: 600;
-      font-size: 40px;
+      font-size: 34px;
       letter-spacing: 0.12em;
       color: #1a1a18;
-      margin-bottom: 2rem;
+      margin-bottom: 1.1rem;
       text-align: center;
     }
 
     /* ── Balance due notice ── */
     .balance-notice {
       width: 100%;
-      margin-bottom: 1.5rem;
-      padding: 0.85rem 1.1rem;
+      margin-bottom: 1rem;
+      padding: 0.6rem 0.9rem;
       background: rgba(184,145,63,0.1);
       border-left: 2px solid #b8913f;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       color: #8a6a2c;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     /* ── Detail rows ── */
@@ -417,7 +435,7 @@ const BookingReceipt = () => {
       justify-content: space-between;
       align-items: baseline;
       width: 100%;
-      padding: 0.7rem 0;
+      padding: 0.45rem 0;
       border-bottom: 1px solid rgba(26,26,24,0.08);
       gap: 1rem;
     }
@@ -430,7 +448,7 @@ const BookingReceipt = () => {
       flex-shrink: 0;
     }
     .row-value {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 400;
       color: #1a1a18;
       text-align: right;
@@ -442,35 +460,35 @@ const BookingReceipt = () => {
       justify-content: space-between;
       align-items: baseline;
       width: 100%;
-      padding: 1rem 0 0;
-      margin-top: 0.5rem;
+      padding: 0.7rem 0 0;
+      margin-top: 0.3rem;
       border-top: 1px solid rgba(184,145,63,0.35);
       gap: 1rem;
     }
     .row-total .row-label { font-size: 12px; color: rgba(26,26,24,0.5); }
     .row-total .row-value {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
     }
 
     /* ── Alerts ── */
     .alert {
       width: 100%;
-      margin-top: 1rem;
-      padding: 0.85rem 1.1rem;
+      margin-top: 0.6rem;
+      padding: 0.6rem 0.9rem;
       background: rgba(175,45,45,0.06);
       border-left: 2px solid #b94a48;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 300;
       color: #b94a48;
-      line-height: 1.6;
+      line-height: 1.5;
     }
-    .alert:first-of-type { margin-top: 1.25rem; }
+    .alert:first-of-type { margin-top: 0.85rem; }
 
     /* ── Footer ── */
     .footer {
-      margin-top: 2rem;
+      margin-top: 1.1rem;
       font-size: 10px;
       font-weight: 500;
       color: rgba(26,26,24,0.5);
@@ -485,45 +503,72 @@ const BookingReceipt = () => {
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="top-bar"></div>
+  <div class="scale-wrap">
+    <div class="card" id="receipt-card">
+      <div class="top-bar"></div>
 
-    <div class="logo-wrap">
-      <div class="logo-img">
-        <img src="${logoSrc}" alt="K.A Hotel and Suites"/>
+      <div class="logo-wrap">
+        <div class="logo-img">
+          <img src="${logoSrc}" alt="K.A Hotel and Suites"/>
+        </div>
+        <span class="logo-name">K.A Hotel &amp; Suites</span>
       </div>
-      <span class="logo-name">K.A Hotel &amp; Suites</span>
+
+      ${(b.checkedIn || b.paymentStatus === "paid") ? `
+      <div class="badges">
+        ${b.checkedIn ? `<span class="badge">✓ Checked In</span>` : ""}
+        ${b.paymentStatus === "paid" ? `<span class="badge">✓ Paid In Full</span>` : ""}
+      </div>` : ""}
+
+      <p class="code-label">Confirmation Code</p>
+      <p class="code-value">${b.confirmation || "—"}</p>
+
+      ${balanceDueNotice ? `<div class="balance-notice">⚠ ${balanceDueNotice}</div>` : ""}
+
+      <div class="rows">
+        ${detailRows.map(({ label, value }) => `
+          <div class="row">
+            <span class="row-label">${label}</span>
+            <span class="row-value">${value ?? "—"}</span>
+          </div>`).join("")}
+      </div>
+
+      <div class="row-total">
+        <span class="row-label">${totalRow.label}</span>
+        <span class="row-value">${totalRow.value}</span>
+      </div>
+
+      <div class="alert">⚠ Damage to any hotel property will be charged to the room occupant.</div>
+      <div class="alert">Reservations with "non-arrival" will be forfeited if not cancelled at least 24 hours prior to the check-in date.</div>
+
+      <p class="footer">Thank you for choosing K.A Hotel &amp; Suites</p>
     </div>
-
-    ${(b.checkedIn || b.paymentStatus === "paid") ? `
-    <div class="badges">
-      ${b.checkedIn ? `<span class="badge">✓ Checked In</span>` : ""}
-      ${b.paymentStatus === "paid" ? `<span class="badge">✓ Paid In Full</span>` : ""}
-    </div>` : ""}
-
-    <p class="code-label">Confirmation Code</p>
-    <p class="code-value">${b.confirmation || "—"}</p>
-
-    ${balanceDueNotice ? `<div class="balance-notice">⚠ ${balanceDueNotice}</div>` : ""}
-
-    <div class="rows">
-      ${detailRows.map(({ label, value }) => `
-        <div class="row">
-          <span class="row-label">${label}</span>
-          <span class="row-value">${value ?? "—"}</span>
-        </div>`).join("")}
-    </div>
-
-    <div class="row-total">
-      <span class="row-label">${totalRow.label}</span>
-      <span class="row-value">${totalRow.value}</span>
-    </div>
-
-    <div class="alert">⚠ Damage to any hotel property will be charged to the room occupant.</div>
-    <div class="alert">Reservations with "non-arrival" will be forfeited if not cancelled at least 24 hours prior to the check-in date.</div>
-
-    <p class="footer">Thank you for choosing K.A Hotel &amp; Suites</p>
   </div>
+
+  <script>
+    (function () {
+      // Force the whole receipt onto exactly one A4 page. A CSS transform
+      // shrinks what's painted but not the box's contribution to document
+      // height, so a long receipt (many rooms, discount + balance-due rows)
+      // would otherwise spill a near-empty second page. Measuring the card
+      // and, if needed, scaling it down while shrinking its wrapper by the
+      // same factor keeps everything on one sheet regardless of row count.
+      var card = document.getElementById('receipt-card');
+      var wrap = card ? card.parentElement : null;
+      if (!card || !wrap) return;
+
+      var mmToPx = 96 / 25.4;
+      var maxHeightPx = 269 * mmToPx; // A4 (297mm) minus 14mm top/bottom margins
+
+      var actualHeight = card.scrollHeight;
+      if (actualHeight > maxHeightPx) {
+        var scale = Math.max(0.55, maxHeightPx / actualHeight);
+        card.style.transformOrigin = 'top center';
+        card.style.transform = 'scale(' + scale + ')';
+        wrap.style.height = Math.ceil(actualHeight * scale) + 'px';
+      }
+    })();
+  </script>
 </body>
 </html>`;
   };

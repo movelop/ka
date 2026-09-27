@@ -363,13 +363,6 @@ const updateQuantity = (field, value) =>
     ];
 
     try {
-      await Promise.all(
-        allSelectedRoomIds.map((roomId) =>
-          api.put(`/rooms/availability/${roomId}`, {
-            dates: getDatesInRange(dates[0].startDate, dates[0].endDate),
-          })
-        )
-      );
 
       const res   = await api.post("/bookings", bookingData);
       const saved = res.data?.booking || res.data;
