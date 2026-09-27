@@ -57,7 +57,7 @@ const buildRoomLineItems = (rooms) => {
  *   ],
  *   registeredBy,
  *   downPayment: { amount, reference, method, note, paidAt },
- *   discount: { amount, note },
+ *   discount: { type, value, reason, approvedBy },
  *   notes
  * }
  */
@@ -98,7 +98,18 @@ export const createBooking = async (req, res, next) => {
 
     // Totals
     const subtotal = roomLineItems.reduce((s, it) => s + (Number(it.lineTotal) || 0), 0);
-    const discountAmount = Number(discount?.amount ?? 0);
+    
+    // ✅ FIX: Calculate discount based on type and value sent from frontend
+    // Frontend sends: { type: "percentage"|"fixed", value: number, reason, approvedBy }
+    // NOT: { amount: number }
+    let discountAmount = 0;
+    if (discount?.type === "percentage") {
+      discountAmount = (subtotal * (Number(discount.value) || 0)) / 100;
+    } else if (discount?.type === "fixed") {
+      discountAmount = Number(discount.value) || 0;
+    }
+    discountAmount = Math.min(Math.max(discountAmount, 0), subtotal);
+    
     const totalPrice = Math.max(0, subtotal - discountAmount);
 
     // Build initial payments array (down payment optional)
@@ -167,7 +178,13 @@ export const createBooking = async (req, res, next) => {
       children: Number(children) || 0,
       rooms: roomLineItems,
       subtotal,
-      discount: { amount: discountAmount, note: discount?.note ?? null },
+      discount: {
+        type: discount?.type || "none",
+        value: Number(discount?.value) || 0,
+        amount: discountAmount,
+        reason: discount?.reason ?? null,
+        approvedBy: discount?.approvedBy ?? null,
+      },
       totalPrice,
       payments,
       registeredBy: registeredBy ?? "online",

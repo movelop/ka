@@ -13,10 +13,7 @@ import useFetch from "../hooks/useFetch";
 import { AuthContext } from "../context/AuthContextProvider";
 import { useStateContext } from "../context/ContextProvider";
 
-// NOTE: assumes each room category document exposes a nightly `price` field
-// and a `roomNumbers` array — same shape as everywhere else in the app.
 const PRICE_FIELD = "price";
-
 let extraCategoryKey = 0;
 
 const NewBooking = () => {
@@ -35,35 +32,28 @@ const NewBooking = () => {
     summary: isDark ? "#383c44" : "#f8fafc",
   };
 
-  const [info, setInfo]                               = useState({});
-  const [dates, setDates]                             = useState([{
+  const [info, setInfo] = useState({});
+  const [dates, setDates] = useState([{
     startDate: new Date(),
-    endDate:   new Date(new Date().getTime() + 86400000),
-    key:       "selection",
+    endDate: new Date(new Date().getTime() + 86400000),
+    key: "selection",
   }]);
-  const [options, setOptions]                         = useState({ adults: 1, children: 0, rooms: 1 });
-  const [rooms, setRooms]                             = useState([]);
-  const [room, setRoom]                               = useState(null);
-  const [selectedRooms, setSelectedRooms]             = useState([]);
+  const [options, setOptions] = useState({ adults: 1, children: 0, rooms: 1 });
+  const [rooms, setRooms] = useState([]);
+  const [room, setRoom] = useState(null);
+  const [selectedRooms, setSelectedRooms] = useState([]);
   const [selectedRoomNumbers, setSelectedRoomNumbers] = useState([]);
-  const [checkedIn, setCheckedIn]                     = useState(false);
-  const [datePickerOpen, setDatePickerOpen]           = useState(false);
-  const [error, setError]                             = useState(false);
-  const [msg, setMsg]                                 = useState("");
-  const [isProcessing, setIsProcessing]               = useState(false);
-
-  // Extra room categories added to this single booking. Each entry:
-  // { key, roomId, roomData, quantity, selectedRooms, selectedRoomNumbers }
-  const [extraCategories, setExtraCategories]         = useState([]);
-
-  // Admin-only discount
-  const [discount, setDiscount]                       = useState({ type: "none", value: "", reason: "" });
-
-  // Admin-only down payment — defaults to fully paid; toggle off to record a partial deposit
-  const [fullyPaid, setFullyPaid]                     = useState(true);
-  const [amountPaidInput, setAmountPaidInput]         = useState("");
-  const [paymentType, setPaymentType]                 = useState("deposit");
-  const [paymentMethod, setPaymentMethod]             = useState("cash");
+  const [checkedIn, setCheckedIn] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [error, setError] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [extraCategories, setExtraCategories] = useState([]);
+  const [discount, setDiscount] = useState({ type: "none", value: "", reason: "" });
+  const [fullyPaid, setFullyPaid] = useState(true);
+  const [amountPaidInput, setAmountPaidInput] = useState("");
+  const [paymentType, setPaymentType] = useState("deposit");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
   const { data } = useFetch("/rooms");
 
@@ -81,32 +71,31 @@ const NewBooking = () => {
     return list;
   };
 
-  const handleChange     = (e) => setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  const handleChange = (e) => setInfo((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   const handleDateChange = (item) => setDates([{
     startDate: item.selection.startDate,
-    endDate:   item.selection.endDate,
-    key:       "selection",
+    endDate: item.selection.endDate,
+    key: "selection",
   }]);
   const handleRoomSelect = (e) => {
     const selected = rooms.find((r) => r._id === e.target.value);
-    setRoom(selected); setSelectedRooms([]); setSelectedRoomNumbers([]);
+    setRoom(selected);
+    setSelectedRooms([]);
+    setSelectedRoomNumbers([]);
   };
-  // Rooms needs a much higher ceiling than adults/children — a booking can
-// reasonably span far more than 5 rooms, unlike guest counts.
-const MAX_QUANTITIES = { adults: 20, children: 10, rooms: 12 };
-const updateQuantity = (field, value) =>
+
+  const MAX_QUANTITIES = { adults: 20, children: 10, rooms: 12 };
+  const updateQuantity = (field, value) =>
     setOptions((prev) => ({ ...prev, [field]: Math.min(Math.max(prev[field] + value, 0), MAX_QUANTITIES[field]) }));
+
   const handleRoomNumberSelect = (e) => {
     const { checked, value, name } = e.target;
-    setSelectedRooms((prev)       => checked ? [...prev, value] : prev.filter((id) => id !== value));
-    setSelectedRoomNumbers((prev) => checked ? [...prev, name]  : prev.filter((n)  => n  !== name));
+    setSelectedRooms((prev) => checked ? [...prev, value] : prev.filter((id) => id !== value));
+    setSelectedRoomNumbers((prev) => checked ? [...prev, name] : prev.filter((n) => n !== name));
   };
 
   const isRoomAvailable = (roomNumber) => {
-    // Check-in is at 12 noon on start date
     const startDateNoon = new Date(dates[0].startDate).setHours(12, 0, 0, 0);
-    
-    // Check-out is at 12 noon on end date
     const endDateNoon = new Date(dates[0].endDate).setHours(12, 0, 0, 0);
 
     const unavailable = roomNumber.unavailableDates.map((d) => {
@@ -114,19 +103,10 @@ const updateQuantity = (field, value) =>
       return new Date(unavailableTime).setHours(12, 0, 0, 0);
     });
 
-    return !unavailable.some((blockedTime) => {
-      // Conflict only if blocked time falls within booking period
-      // Using < for end date so checkout at noon doesn't conflict with next check-in at noon
-      return (blockedTime >= startDateNoon && blockedTime < endDateNoon);
-    });
+    return !unavailable.some((blockedTime) => (blockedTime >= startDateNoon && blockedTime < endDateNoon));
   };
 
   const days = Math.ceil((dates[0].endDate - dates[0].startDate) / (1000 * 60 * 60 * 24));
-
-  // ---- Extra room category handlers ----
-  // Same model as the public checkout page: `options.rooms` is a FIXED pool
-  // shared across every category — adding a category reallocates rooms away
-  // from the primary type rather than adding more rooms on top of it.
 
   const addCategory = () => {
     setExtraCategories((prev) => [
@@ -190,12 +170,10 @@ const updateQuantity = (field, value) =>
     );
   };
 
-  // Reset extra categories entirely if the room count drops to 1
   useEffect(() => {
     if (options.rooms <= 1 && extraCategories.length > 0) {
       setExtraCategories([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.rooms]);
 
   const extraCategoriesQuantityTotal = extraCategories.reduce((sum, cat) => sum + cat.quantity, 0);
@@ -203,17 +181,12 @@ const updateQuantity = (field, value) =>
   const isOverAllocated = rawPrimaryQuantity < 0;
   const primaryQuantity = Math.max(0, rawPrimaryQuantity);
 
-  // You can't have more distinct room TYPES than rooms booked — each type
-  // needs at least 1 room, so once (primary + extras) reaches options.rooms,
-  // there's no room left to give a brand-new category.
   const maxCategoriesReached = extraCategories.length + 1 >= options.rooms;
   const addCategoryDisabled = primaryQuantity === 0 || maxCategoriesReached;
 
-  // Reset primary room-number selection whenever the primary allocation shifts
   useEffect(() => {
     setSelectedRooms([]);
     setSelectedRoomNumbers([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [primaryQuantity]);
 
   const categoryLineTotal = (category) => {
@@ -222,11 +195,11 @@ const updateQuantity = (field, value) =>
     return nightlyPrice * days * category.quantity;
   };
 
-  const primarySubtotal      = primaryQuantity * days * (Number(room?.[PRICE_FIELD]) || 0);
+  const primarySubtotal = primaryQuantity * days * (Number(room?.[PRICE_FIELD]) || 0);
   const extraCategoriesTotal = extraCategories.reduce((sum, cat) => sum + categoryLineTotal(cat), 0);
-  const subtotal             = primarySubtotal + extraCategoriesTotal;
+  const subtotal = primarySubtotal + extraCategoriesTotal;
 
-  // ---- Discount ----
+  // ✅ Discount calculation — matches backend logic
   let discountAmount = 0;
   if (discount.type === "percentage") {
     discountAmount = (subtotal * (Number(discount.value) || 0)) / 100;
@@ -237,11 +210,6 @@ const updateQuantity = (field, value) =>
 
   const totalPrice = Math.round((subtotal - discountAmount) * 100) / 100;
 
-  // ---- Payment ----
-  // Down payments / part payments are only allowed for bookings that check
-  // in on a future date. If check-in is today, the balance must be settled
-  // in full at booking time — there's no later point before check-in to
-  // collect the rest.
   const isCheckInToday = (() => {
     const today = new Date();
     const checkIn = dates[0].startDate;
@@ -257,15 +225,11 @@ const updateQuantity = (field, value) =>
     : Math.min(Math.max(Number(amountPaidInput) || 0, 0), totalPrice);
   const balanceDue = Math.max(0, Math.round((totalPrice - effectiveAmountPaid) * 100) / 100);
 
-  // If the guest was mid-way through recording a part payment and then
-  // changed the check-in date to today, snap back to fully paid instead of
-  // silently letting a same-day booking through with a balance.
   useEffect(() => {
     if (isCheckInToday && !fullyPaid) {
       setFullyPaid(true);
       setAmountPaidInput("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCheckInToday]);
 
   const handleBookingSubmit = async (e) => {
@@ -327,15 +291,15 @@ const updateQuantity = (field, value) =>
 
     const bookingData = {
       ...info,
-      rooms:         roomsPayload,
-      adults:        options.adults,
-      children:      options.children,
-      startDate:     dates[0].startDate,
-      endDate:       dates[0].endDate,
-      email:         info.email || `janedoe@yahoo.com`,
-      identity:      info.identity || "NIL",
+      rooms: roomsPayload,
+      adults: options.adults,
+      children: options.children,
+      startDate: dates[0].startDate,
+      endDate: dates[0].endDate,
+      email: info.email || `janedoe@yahoo.com`,
+      identity: info.identity || "NIL",
       checkedIn,
-      registeredBy:  `${user.firstName} ${user.lastName}`,
+      registeredBy: `${user.firstName} ${user.lastName}`,
       ...(discount.type !== "none"
         ? {
             discount: {
@@ -357,27 +321,23 @@ const updateQuantity = (field, value) =>
         : {}),
     };
 
-    const allSelectedRoomIds = [
-      ...selectedRooms,
-      ...extraCategories.flatMap((cat) => cat.selectedRooms),
-    ];
-
     try {
-
-      const res   = await api.post("/bookings", bookingData);
+      const res = await api.post("/bookings", bookingData);
       const saved = res.data?.booking || res.data;
 
       navigate("/bookings/receipt", {
         state: {
           booking: {
             ...bookingData,
-            _id:          saved?._id,
+            _id: saved?._id,
             confirmation: saved?.confirmation,
-            totalPrice:   saved?.totalPrice   ?? totalPrice,
-            amountPaid:   saved?.amountPaid   ?? effectiveAmountPaid,
-            balanceDue:   saved?.balanceDue   ?? balanceDue,
+            totalPrice: saved?.totalPrice ?? totalPrice,
+            amountPaid: saved?.amountPaid ?? effectiveAmountPaid,
+            balanceDue: saved?.balanceDue ?? balanceDue,
             paymentStatus: saved?.paymentStatus,
-            rooms:        saved?.rooms        || roomsPayload,
+            rooms: saved?.rooms || roomsPayload,
+            subtotal: saved?.subtotal ?? subtotal,
+            discount: saved?.discount || (discount.type !== "none" ? { ...discount, amount: discountAmount } : null),
           },
         },
       });
@@ -397,7 +357,7 @@ const updateQuantity = (field, value) =>
     transition: "border-color 0.15s, box-shadow 0.15s",
   };
   const focusInput = (e) => { e.target.style.borderColor = currentColor; e.target.style.boxShadow = `0 0 0 3px ${currentColor}25`; };
-  const blurInput  = (e) => { e.target.style.borderColor = c.border;     e.target.style.boxShadow = "none"; };
+  const blurInput = (e) => { e.target.style.borderColor = c.border; e.target.style.boxShadow = "none"; };
   const labelStyle = {
     fontSize: "10px", fontWeight: 700,
     textTransform: "uppercase", letterSpacing: "0.08em",
@@ -433,11 +393,11 @@ const updateQuantity = (field, value) =>
             Summary
           </p>
           {[
-            { label: "Check-in",  value: format(dates[0].startDate, "dd MMM yyyy") },
-            { label: "Check-out", value: format(dates[0].endDate,   "dd MMM yyyy") },
-            { label: "Night(s)",  value: days },
-            { label: "Guests",    value: `${options.adults} adult${options.adults !== 1 ? "s" : ""}${options.children > 0 ? `, ${options.children} children` : ""}` },
-            { label: "Rooms",     value: options.rooms },
+            { label: "Check-in", value: format(dates[0].startDate, "dd MMM yyyy") },
+            { label: "Check-out", value: format(dates[0].endDate, "dd MMM yyyy") },
+            { label: "Night(s)", value: days },
+            { label: "Guests", value: `${options.adults} adult${options.adults !== 1 ? "s" : ""}${options.children > 0 ? `, ${options.children} children` : ""}` },
+            { label: "Rooms", value: options.rooms },
           ].map(({ label, value }) => (
             <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${c.border}` }}>
               <span style={{ fontSize: "12px", color: c.muted }}>{label}</span>
@@ -499,8 +459,8 @@ const updateQuantity = (field, value) =>
             <label style={labelStyle}>Dates</label>
             <div style={{ display: "flex", gap: "10px" }}>
               {[
-                { label: "Check-in",  value: format(dates[0].startDate, "dd MMM yyyy") },
-                { label: "Check-out", value: format(dates[0].endDate,   "dd MMM yyyy") },
+                { label: "Check-in", value: format(dates[0].startDate, "dd MMM yyyy") },
+                { label: "Check-out", value: format(dates[0].endDate, "dd MMM yyyy") },
               ].map(({ label, value }) => (
                 <button key={label} type="button" onClick={() => setDatePickerOpen(!datePickerOpen)}
                   style={{ flex: 1, height: "42px", padding: "0 14px", borderRadius: "10px", cursor: "pointer", border: `1px solid ${datePickerOpen ? currentColor : c.border}`, background: c.inputBg, color: c.text, fontSize: "13px", textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "center", transition: "border-color 0.15s" }}>
@@ -559,7 +519,7 @@ const updateQuantity = (field, value) =>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {room.roomNumbers.map((rNum) => {
                   const available = isRoomAvailable(rNum);
-                  const selected  = selectedRooms.includes(rNum._id);
+                  const selected = selectedRooms.includes(rNum._id);
                   return (
                     <label key={rNum._id} style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 12px", borderRadius: "8px", cursor: available ? "pointer" : "not-allowed", fontSize: "12px", fontWeight: 600, border: `1px solid ${selected ? currentColor : c.border}`, background: selected ? `${currentColor}15` : c.surface, color: !available ? c.muted : selected ? currentColor : c.text, opacity: available ? 1 : 0.45, transition: "all 0.15s" }}>
                       <input type="checkbox" value={rNum._id} name={rNum.number.toString()} checked={selected} onChange={handleRoomNumberSelect} disabled={!available} style={{ display: "none" }} />
@@ -606,7 +566,7 @@ const updateQuantity = (field, value) =>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                         {cat.roomData.roomNumbers.map((rNum) => {
                           const available = isRoomAvailable(rNum);
-                          const selected  = cat.selectedRooms.includes(rNum._id);
+                          const selected = cat.selectedRooms.includes(rNum._id);
                           return (
                             <label key={rNum._id} style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "5px 12px", borderRadius: "8px", cursor: available ? "pointer" : "not-allowed", fontSize: "12px", fontWeight: 600, border: `1px solid ${selected ? currentColor : c.border}`, background: selected ? `${currentColor}15` : c.bg, color: !available ? c.muted : selected ? currentColor : c.text, opacity: available ? 1 : 0.45, transition: "all 0.15s" }}>
                               <input type="checkbox" value={rNum._id} name={rNum.number.toString()} checked={selected} onChange={(e) => handleCategoryRoomSelect(cat.key, e)} disabled={!available} style={{ display: "none" }} />
@@ -736,7 +696,7 @@ const updateQuantity = (field, value) =>
               onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.opacity = "0.9")}
               onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.opacity = "1")}
               onMouseDown={(e) => !isProcessing && (e.currentTarget.style.transform = "scale(0.97)")}
-              onMouseUp={(e)   => !isProcessing && (e.currentTarget.style.transform = "scale(1)")}>
+              onMouseUp={(e) => !isProcessing && (e.currentTarget.style.transform = "scale(1)")}>
               {isProcessing ? (
                 <>
                   <div style={{ width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
