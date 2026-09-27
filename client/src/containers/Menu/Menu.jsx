@@ -87,11 +87,11 @@ const BAR_CATEGORIES = [
   {
     category: 'Soft Drinks',
     items: [
-      { name: 'Water (75cl)',       price: 500  },
+      { name: 'Water (75cl)',        price: 500  },
       { name: 'Coke',                price: 800  },
       { name: 'Fanta',               price: 800  },
       { name: 'Sprite',              price: 800  },
-      { name: 'Pepsi',                 price: 800 },
+      { name: 'Pepsi',               price: 800 },
       { name: 'Maltina',             price: 1000 },
       { name: '5 Alive',             price: 2500 },
       { name: 'Chivita',             price: 3000 },
